@@ -2,7 +2,9 @@ com\gestortareas\paneles\infrastructure\adapter\in\rest\dto\PanelRequestDTO.clas
 com\gestortareas\paneles\domain\port\out\PanelRepositoryPort.class
 com\gestortareas\paneles\infrastructure\adapter\in\rmi\PanelRemoteService.class
 com\gestortareas\paneles\infrastructure\adapter\in\rmi\RmiServerBootstrap.class
+com\gestortareas\paneles\application\exception\UnauthorizedException.class
 com\gestortareas\paneles\infrastructure\adapter\in\rest\dto\PanelResponseDTO.class
+com\gestortareas\paneles\application\exception\ValidationException.class
 com\gestortareas\paneles\domain\port\in\ListarPanelesUseCase.class
 com\gestortareas\paneles\infrastructure\adapter\in\rest\PanelController.class
 com\gestortareas\paneles\domain\port\in\CrearPanelUseCase.class
