@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public interface PanelRepositoryPort {
     Panel guardar(Panel panel);
-    List<Panel> buscarPorPropietario(Long propietarioId);
-    Optional<Panel> buscarPorId(Long panelId);
+    List<Panel> listarPorPropietario(String propietarioId);
+    Optional<Panel> buscarPorId(String panelId);
+    Panel actualizar(Panel panel);
 }

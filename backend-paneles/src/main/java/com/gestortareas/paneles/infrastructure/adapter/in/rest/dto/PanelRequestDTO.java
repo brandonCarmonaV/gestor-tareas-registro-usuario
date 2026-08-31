@@ -15,5 +15,5 @@ public class PanelRequestDTO {
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private Integer prioridad;
-    private Long propietarioId;
+    private String propietarioId;
 }

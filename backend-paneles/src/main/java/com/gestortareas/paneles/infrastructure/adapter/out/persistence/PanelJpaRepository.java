@@ -4,6 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface PanelJpaRepository extends JpaRepository<PanelEntity, Long> {
-    List<PanelEntity> findByPropietarioId(Long propietarioId);
+public interface PanelJpaRepository extends JpaRepository<PanelEntity, String> {
+    List<PanelEntity> findByPropietarioId(String propietarioId);
 }

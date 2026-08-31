@@ -9,12 +9,12 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 public class PanelResponseDTO {
-    private Long id;
+    private String id;
     private String nombre;
     private String color;
     private EstadoPanel estado;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private Integer prioridad;
-    private Long propietarioId;
+    private String propietarioId;
 }

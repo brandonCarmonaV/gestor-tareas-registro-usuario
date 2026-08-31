@@ -2,52 +2,50 @@ package com.gestortareas.paneles.application.service;
 
 import com.gestortareas.paneles.domain.model.EstadoPanel;
 import com.gestortareas.paneles.domain.model.Panel;
-import com.gestortareas.paneles.domain.model.Tarea;
 import com.gestortareas.paneles.domain.port.in.ActualizarEstadoPanelUseCase;
 import com.gestortareas.paneles.domain.port.in.CrearPanelUseCase;
-import com.gestortareas.paneles.domain.port.in.CrearTareaUseCase;
 import com.gestortareas.paneles.domain.port.in.ListarPanelesUseCase;
-import com.gestortareas.paneles.domain.port.in.ListarTareasUseCase;
+import com.gestortareas.paneles.domain.port.out.AuthServicePort;
 import com.gestortareas.paneles.domain.port.out.PanelRepositoryPort;
-import com.gestortareas.paneles.domain.port.out.TareaRepositoryPort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase,
-        ActualizarEstadoPanelUseCase, CrearTareaUseCase, ListarTareasUseCase {
+        ActualizarEstadoPanelUseCase {
 
     private final PanelRepositoryPort panelRepository;
-    private final TareaRepositoryPort tareaRepository;
+    private final AuthServicePort authService;
 
-    public PanelService(PanelRepositoryPort panelRepository, TareaRepositoryPort tareaRepository) {
+    public PanelService(PanelRepositoryPort panelRepository, AuthServicePort authService) {
         this.panelRepository = panelRepository;
-        this.tareaRepository = tareaRepository;
+        this.authService = authService;
     }
 
     @Override
-    public Panel crear(Panel panel) {
-        throw new UnsupportedOperationException("TODO: implementar creacion de panel");
+    public Panel crearPanel(Panel panel) {
+        // TODO: Validar que el nombre no esté vacío antes de crear
+        // TODO: Validar que el panel tenga todos los campos obligatorios
+        // TODO: Usar authService para validar que el usuario tenga permisos
+        return panelRepository.guardar(panel);
     }
 
     @Override
-    public List<Panel> listarPorPropietario(Long propietarioId) {
-        throw new UnsupportedOperationException("TODO: implementar listado de paneles");
+    public List<Panel> listarPaneles(String propietarioId) {
+        // TODO: Validar que el propietarioId sea válido
+        // TODO: Usar authService para validar que el usuario tenga permisos
+        return panelRepository.listarPorPropietario(propietarioId);
     }
 
     @Override
-    public Panel actualizarEstado(Long panelId, EstadoPanel estado) {
-        throw new UnsupportedOperationException("TODO: implementar actualizacion de estado");
-    }
-
-    @Override
-    public Tarea crear(Tarea tarea) {
-        throw new UnsupportedOperationException("TODO: implementar creacion de tarea");
-    }
-
-    @Override
-    public List<Tarea> listarPorPanel(Long panelId) {
-        throw new UnsupportedOperationException("TODO: implementar listado de tareas");
+    public Panel actualizarEstado(String panelId, EstadoPanel nuevoEstado) {
+        // TODO: Validar que el panelId sea válido
+        // TODO: Validar que el nuevoEstado sea un estado válido (lanzar excepción si no)
+        // TODO: Usar authService para validar que el usuario tenga permisos
+        Panel panel = panelRepository.buscarPorId(panelId)
+                .orElseThrow(() -> new IllegalArgumentException("Panel no encontrado: " + panelId));
+        panel.setEstado(nuevoEstado);
+        return panelRepository.actualizar(panel);
     }
 }

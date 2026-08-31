@@ -4,5 +4,5 @@ import com.gestortareas.paneles.domain.model.EstadoPanel;
 import com.gestortareas.paneles.domain.model.Panel;
 
 public interface ActualizarEstadoPanelUseCase {
-    Panel actualizarEstado(Long panelId, EstadoPanel estado);
+    Panel actualizarEstado(String panelId, EstadoPanel nuevoEstado);
 }

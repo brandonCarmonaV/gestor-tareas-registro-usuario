@@ -18,16 +18,25 @@ public class PanelRepositoryAdapter implements PanelRepositoryPort {
 
     @Override
     public Panel guardar(Panel panel) {
+        // TODO: Mapear Panel a PanelEntity y persistir usando repository.save()
         throw new UnsupportedOperationException("TODO: mapear y persistir panel");
     }
 
     @Override
-    public List<Panel> buscarPorPropietario(Long propietarioId) {
+    public List<Panel> listarPorPropietario(String propietarioId) {
+        // TODO: Usar repository.findByPropietarioId() y mapear resultado a List<Panel>
         throw new UnsupportedOperationException("TODO: mapear paneles persistidos");
     }
 
     @Override
-    public Optional<Panel> buscarPorId(Long panelId) {
+    public Optional<Panel> buscarPorId(String panelId) {
+        // TODO: Usar repository.findById() y mapear resultado a Optional<Panel>
         throw new UnsupportedOperationException("TODO: mapear panel persistido");
+    }
+
+    @Override
+    public Panel actualizar(Panel panel) {
+        // TODO: Mapear Panel a PanelEntity y persistir usando repository.save()
+        throw new UnsupportedOperationException("TODO: mapear y actualizar panel");
     }
 }
