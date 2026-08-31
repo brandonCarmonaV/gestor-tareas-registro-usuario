@@ -5,6 +5,7 @@ import com.gestortareas.paneles.application.exception.ValidationException;
 import com.gestortareas.paneles.application.service.PanelService;
 import com.gestortareas.paneles.domain.model.EstadoPanel;
 import com.gestortareas.paneles.domain.model.Panel;
+import com.gestortareas.paneles.domain.port.out.AuthServicePort;
 import com.gestortareas.paneles.infrastructure.adapter.in.rest.dto.PanelRequestDTO;
 import com.gestortareas.paneles.infrastructure.adapter.in.rest.dto.PanelResponseDTO;
 import jakarta.validation.Valid;
@@ -50,37 +51,43 @@ public class PanelController {
     private static final Logger logger = Logger.getLogger(PanelController.class.getName());
     
     private final PanelService panelService;
+    private final AuthServicePort authService;
 
-    public PanelController(PanelService panelService) {
+    public PanelController(PanelService panelService, AuthServicePort authService) {
         this.panelService = panelService;
+        this.authService = authService;
     }
 
     /**
      * Crea un nuevo panel.
      * 
      * Flujo:
-     * 1. Extrae propietarioId del usuario autenticado (header X-User-Id)
-     * 2. Extrae parámetros del DTO
-     * 3. Llama a panelService.crearPanel()
-     * 4. Convierte resultado a PanelResponseDTO
-     * 5. Retorna 201 Created con el panel creado
+     * 1. Extrae token JWT del header Authorization
+     * 2. Valida token contra backend de Auth usando AuthServicePort
+     * 3. Extrae propietarioId del resultado
+     * 4. Extrae parámetros del DTO
+     * 5. Llama a panelService.crearPanel()
+     * 6. Convierte resultado a PanelResponseDTO
+     * 7. Retorna 201 Created con el panel creado
      * 
      * Códigos HTTP:
      * - 201 Created: Panel creado exitosamente
      * - 400 Bad Request: Validación fallida (nombre vacío, fechas inválidas, etc.)
-     * - 401 Unauthorized: Usuario no autenticado o inválido
+     * - 401 Unauthorized: Token inválido o usuario no autenticado
      * 
      * @param request DTO con datos del panel a crear
-     * @param userIdHeader propietarioId del usuario autenticado (header X-User-Id)
+     * @param authHeader header Authorization con token JWT (ej: "Bearer <token>")
+     * @param userIdHeader header X-User-Id como fallback para testing (ignorado si authHeader presente)
      * @return Panel creado con código 201
      */
     @PostMapping
     public ResponseEntity<PanelResponseDTO> crearPanel(
             @Valid @RequestBody PanelRequestDTO request,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestHeader(value = "X-User-Id", required = false) String userIdHeader) {
         
         try {
-            String propietarioId = extraerPropietarioId(userIdHeader);
+            String propietarioId = extraerPropietarioId(authHeader, userIdHeader);
             
             // Llamar a panelService con parámetros individuales
             Panel panelCreado = panelService.crearPanel(
@@ -113,24 +120,27 @@ public class PanelController {
      * Lista todos los paneles del usuario autenticado.
      * 
      * Flujo:
-     * 1. Extrae propietarioId del usuario autenticado (header X-User-Id)
-     * 2. Llama a panelService.listarPaneles()
-     * 3. Convierte lista de Panel a lista de PanelResponseDTO
-     * 4. Retorna 200 OK con lista
+     * 1. Extrae token JWT del header Authorization o X-User-Id para fallback
+     * 2. Valida token y obtiene propietarioId
+     * 3. Llama a panelService.listarPaneles()
+     * 4. Convierte lista de Panel a lista de PanelResponseDTO
+     * 5. Retorna 200 OK con lista
      * 
      * Códigos HTTP:
      * - 200 OK: Lista de paneles (puede estar vacía)
      * - 401 Unauthorized: Usuario no autenticado o inválido
      * 
-     * @param userIdHeader propietarioId del usuario autenticado (header X-User-Id)
+     * @param authHeader token JWT en Authorization header
+     * @param userIdHeader propietarioId del usuario autenticado (header X-User-Id) como fallback
      * @return Lista de paneles del usuario
      */
     @GetMapping
     public ResponseEntity<List<PanelResponseDTO>> listarPaneles(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestHeader(value = "X-User-Id", required = false) String userIdHeader) {
         
         try {
-            String propietarioId = extraerPropietarioId(userIdHeader);
+            String propietarioId = extraerPropietarioId(authHeader, userIdHeader);
             
             List<Panel> paneles = panelService.listarPaneles(propietarioId);
             
@@ -154,11 +164,12 @@ public class PanelController {
      * Cambia el estado de un panel existente.
      * 
      * Flujo:
-     * 1. Extrae propietarioId del usuario autenticado (header X-User-Id)
-     * 2. Valida que usuario sea propietario del panel
-     * 3. Llama a panelService.actualizarEstado() con propietarioId
-     * 4. Convierte resultado a PanelResponseDTO
-     * 5. Retorna 200 OK con panel actualizado
+     * 1. Extrae token JWT del header Authorization o X-User-Id para fallback
+     * 2. Valida token y obtiene propietarioId
+     * 3. Valida que usuario sea propietario del panel
+     * 4. Llama a panelService.actualizarEstado() con propietarioId
+     * 5. Convierte resultado a PanelResponseDTO
+     * 6. Retorna 200 OK con panel actualizado
      * 
      * Códigos HTTP:
      * - 200 OK: Estado actualizado exitosamente
@@ -168,17 +179,19 @@ public class PanelController {
      * 
      * @param panelId id del panel a actualizar
      * @param nuevoEstado nuevo estado del panel
-     * @param userIdHeader propietarioId del usuario autenticado (header X-User-Id)
+     * @param authHeader token JWT en Authorization header
+     * @param userIdHeader propietarioId del usuario autenticado (header X-User-Id) como fallback
      * @return Panel actualizado
      */
     @PutMapping("/{id}/estado")
     public ResponseEntity<PanelResponseDTO> actualizarEstado(
             @PathVariable("id") String panelId,
             @RequestBody EstadoPanel nuevoEstado,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestHeader(value = "X-User-Id", required = false) String userIdHeader) {
         
         try {
-            String propietarioId = extraerPropietarioId(userIdHeader);
+            String propietarioId = extraerPropietarioId(authHeader, userIdHeader);
             
             // Llamar a versión de actualizarEstado que recibe propietarioId
             Panel panelActualizado = panelService.actualizarEstado(panelId, nuevoEstado, propietarioId);
@@ -199,28 +212,77 @@ public class PanelController {
     /**
      * Extrae el propietarioId del usuario autenticado.
      * 
-     * Estrategia:
-     * 1. Intenta obtener del header X-User-Id (para testing/desarrollo)
-     * 2. En FASE 7: se integrará con Spring Security para extraer de JWT/token
+     * Estrategia FASE 7 implementada:
+     * 1. Preferir token JWT en Authorization header
+     * 2. Fallback: usar X-User-Id directamente (testing/desarrollo)
+     * 3. Si ninguno disponible: lanzar UnauthorizedException
      * 
-     * @param userIdHeader valor del header X-User-Id (puede ser null)
+     * Con token JWT:
+     * - Extrae token del header "Authorization: Bearer <token>"
+     * - Valida token usando AuthServicePort.validarUsuario()
+     * - Retorna el propietarioId/userId validado por el backend de Auth remoto
+     * 
+     * Con X-User-Id:
+     * - Retorna el valor del header sin validación (solo para testing)
+     * 
+     * @param authHeader valor del header Authorization (puede ser null)
+     * @param userIdHeader valor del header X-User-Id como fallback (puede ser null)
      * @return propietarioId del usuario autenticado
      * @throws UnauthorizedException si no se puede extraer propietarioId válido
      */
-    private String extraerPropietarioId(String userIdHeader) {
-        // Por ahora, extrae del header X-User-Id
-        // En FASE 7: reemplazar con extracción de SecurityContext
+    private String extraerPropietarioId(String authHeader, String userIdHeader) {
+        // FASE 7: Preferir token JWT en Authorization header
+        if (authHeader != null && !authHeader.trim().isEmpty()) {
+            try {
+                // Extraer token de "Bearer <token>"
+                String token = extraerTokenDelHeader(authHeader);
+                
+                logger.info("Validando token JWT contra backend de Auth remoto...");
+                
+                // Usar AuthServicePort para validar token y obtener userId
+                String propietarioId = authService.validarUsuario(token);
+                
+                logger.info("Token validado exitosamente. propietarioId=" + propietarioId);
+                return propietarioId;
+                
+            } catch (RuntimeException ex) {
+                logger.warning("Error validando token JWT: " + ex.getMessage());
+                throw new UnauthorizedException("Token de autenticación inválido o expirado", ex);
+            }
+        }
+        
+        // Fallback: usar X-User-Id directamente (testing/desarrollo)
         if (userIdHeader != null && !userIdHeader.trim().isEmpty()) {
+            logger.info("Usando fallback X-User-Id (development mode)");
             return userIdHeader.trim();
         }
         
-        // TODO FASE 7: Integrar con Spring Security
-        // String usuarioAutenticado = SecurityContextHolder.getContext()
-        //         .getAuthentication()
-        //         .getPrincipal()
-        //         .toString();
-        // return usuarioAutenticado;
+        throw new UnauthorizedException(
+            "Usuario no autenticado. Proporcionar token JWT en header Authorization " +
+            "o X-User-Id para testing (development mode)"
+        );
+    }
+
+    /**
+     * Extrae el token del header Authorization.
+     * 
+     * Espera formato: "Bearer <token>"
+     * 
+     * @param authHeader valor del header Authorization
+     * @return token sin el prefijo "Bearer "
+     * @throws IllegalArgumentException si el formato es inválido
+     */
+    private String extraerTokenDelHeader(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Authorization header debe tener formato 'Bearer <token>'");
+        }
         
-        throw new UnauthorizedException("Usuario no autenticado. Proporcionar header X-User-Id o usar Spring Security");
+        String token = authHeader.substring("Bearer ".length()).trim();
+        
+        if (token.isEmpty()) {
+            throw new IllegalArgumentException("Token vacío en Authorization header");
+        }
+        
+        return token;
     }
 }

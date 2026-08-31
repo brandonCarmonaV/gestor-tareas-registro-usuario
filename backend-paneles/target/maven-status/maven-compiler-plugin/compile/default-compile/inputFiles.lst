@@ -16,6 +16,8 @@ C:\Users\migue\Desktop\wazaa\2026-2\PDyP\gestor-tareas-registro-usuario\backend-
 C:\Users\migue\Desktop\wazaa\2026-2\PDyP\gestor-tareas-registro-usuario\backend-paneles\src\main\java\com\gestortareas\paneles\infrastructure\adapter\in\rmi\PanelRemoteService.java
 C:\Users\migue\Desktop\wazaa\2026-2\PDyP\gestor-tareas-registro-usuario\backend-paneles\src\main\java\com\gestortareas\paneles\infrastructure\adapter\in\rmi\PanelRmiServiceImpl.java
 C:\Users\migue\Desktop\wazaa\2026-2\PDyP\gestor-tareas-registro-usuario\backend-paneles\src\main\java\com\gestortareas\paneles\infrastructure\adapter\in\rmi\RmiServerBootstrap.java
+C:\Users\migue\Desktop\wazaa\2026-2\PDyP\gestor-tareas-registro-usuario\backend-paneles\src\main\java\com\gestortareas\paneles\infrastructure\adapter\out\auth\AuthRemoteService.java
+C:\Users\migue\Desktop\wazaa\2026-2\PDyP\gestor-tareas-registro-usuario\backend-paneles\src\main\java\com\gestortareas\paneles\infrastructure\adapter\out\auth\AuthRmiClientAdapter.java
 C:\Users\migue\Desktop\wazaa\2026-2\PDyP\gestor-tareas-registro-usuario\backend-paneles\src\main\java\com\gestortareas\paneles\infrastructure\adapter\out\persistence\PanelEntity.java
 C:\Users\migue\Desktop\wazaa\2026-2\PDyP\gestor-tareas-registro-usuario\backend-paneles\src\main\java\com\gestortareas\paneles\infrastructure\adapter\out\persistence\PanelJpaRepository.java
 C:\Users\migue\Desktop\wazaa\2026-2\PDyP\gestor-tareas-registro-usuario\backend-paneles\src\main\java\com\gestortareas\paneles\infrastructure\adapter\out\persistence\PanelRepositoryAdapter.java

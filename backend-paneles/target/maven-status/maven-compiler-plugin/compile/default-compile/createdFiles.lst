@@ -1,9 +1,11 @@
 com\gestortareas\paneles\infrastructure\adapter\in\rest\dto\PanelResponseDTO.class
+com\gestortareas\paneles\infrastructure\adapter\out\auth\AuthRemoteService.class
 com\gestortareas\paneles\domain\port\in\ListarPanelesUseCase.class
 com\gestortareas\paneles\infrastructure\adapter\in\rest\PanelController.class
 com\gestortareas\paneles\domain\port\in\CrearPanelUseCase.class
 com\gestortareas\paneles\infrastructure\adapter\in\rmi\PanelRmiServiceImpl.class
 com\gestortareas\paneles\domain\model\Panel.class
+com\gestortareas\paneles\infrastructure\adapter\out\auth\AuthRmiClientAdapter.class
 com\gestortareas\paneles\infrastructure\config\BeanConfig.class
 com\gestortareas\paneles\infrastructure\config\RmiConfig.class
 com\gestortareas\paneles\infrastructure\adapter\in\rest\dto\PanelRequestDTO.class

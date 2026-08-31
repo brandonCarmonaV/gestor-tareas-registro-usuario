@@ -183,21 +183,30 @@ public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase,
     /**
      * Valida que un propietarioId sea un usuario autenticado válido.
      * 
-     * En FASE 7 (implementación del adapter de Auth), este método verificará
-     * el token llamando al servicio de autenticación remoto.
+     * Esta es una validación defensiva: asume que el propietarioId ya fue extraído
+     * y validado contra el token en el controlador (REST o RMI).
      * 
-     * Por ahora, simplemente verifica que propietarioId no sea null o vacío.
+     * Flujo esperado (implementado en adapters de entrada):
+     * 1. Controlador recibe token en header
+     * 2. Controlador llama a AuthServicePort.validarUsuario(token)
+     * 3. Controlador extrae propietarioId del resultado
+     * 4. Controlador llama a PanelService con propietarioId validado
+     * 5. PanelService valida que propietarioId no sea null/vacío (defensivo)
+     * 
+     * FASE 7: AuthRmiClientAdapter implementa AuthServicePort usando RMI
+     * para conectar con el backend de autenticación remoto.
      * 
      * @param propietarioId id a validar
-     * @throws RuntimeException si no es válido (será capturada y convertida a UnauthorizedException)
+     * @throws IllegalArgumentException si es null o vacío
      */
     private void validarPropietarioId(String propietarioId) {
         if (propietarioId == null || propietarioId.trim().isEmpty()) {
             throw new IllegalArgumentException("propietarioId no puede ser null o vacío");
         }
         
-        // TODO FASE 7: Implementar validación real usando authService
-        // propietarioId debe corresponder a un usuario autenticado válido
+        // Validación defensiva completada.
+        // La validación real del token ocurre en el controlador (adapter de entrada)
+        // antes de llegar aquí, usando AuthServicePort (implementado por AuthRmiClientAdapter).
         // String usuarioValidado = authService.validarUsuario(token);
         // if (!usuarioValidado.equals(propietarioId)) {
         //     throw new IllegalArgumentException("propietarioId no coincide con usuario autenticado");
