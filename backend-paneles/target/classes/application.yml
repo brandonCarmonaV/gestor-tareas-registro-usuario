@@ -1,0 +1,18 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/gestor_tareas}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+rmi:
+  registry-port: ${RMI_REGISTRY_PORT:1100}
+  auth-host: ${AUTH_RMI_HOST:localhost}
+  auth-port: ${AUTH_RMI_PORT:1099}
