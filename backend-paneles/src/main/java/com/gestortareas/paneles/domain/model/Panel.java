@@ -71,6 +71,28 @@ public class Panel {
     }
 
     /**
+     * Método de fábrica para RECONSTRUIR un Panel desde la base de datos.
+     * NO aplica validaciones (asume que los datos ya fueron validados al persistir).
+     * Usado únicamente por PanelRepositoryAdapter para mapear PanelEntity → Panel.
+     * 
+     * @param id id del panel (desde BD)
+     * @param nombre nombre del panel (desde BD)
+     * @param color color del panel (desde BD)
+     * @param estado estado del panel (desde BD)
+     * @param fechaInicio fecha de inicio (desde BD)
+     * @param fechaFin fecha de fin (desde BD)
+     * @param prioridad prioridad (desde BD)
+     * @param propietarioId id del propietario (desde BD)
+     * @param fechaCreacion fecha de creación (desde BD)
+     * @return Panel reconstruido sin validaciones
+     */
+    public static Panel reconstituit(String id, String nombre, String color, EstadoPanel estado,
+                                     LocalDate fechaInicio, LocalDate fechaFin, Integer prioridad,
+                                     String propietarioId, LocalDateTime fechaCreacion) {
+        return new Panel(id, nombre, color, estado, fechaInicio, fechaFin, prioridad, propietarioId, fechaCreacion);
+    }
+
+    /**
      * Cambia el estado del panel si es diferente al actual.
      * Es idempotente: si el nuevo estado es igual al actual, no hace nada.
      * Cualquier transición de estado es válida.
