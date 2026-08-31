@@ -9,6 +9,7 @@ import com.gestortareas.paneles.domain.port.out.AuthServicePort;
 import com.gestortareas.paneles.domain.port.out.PanelRepositoryPort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -24,28 +25,33 @@ public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase,
     }
 
     @Override
-    public Panel crearPanel(Panel panel) {
-        // TODO: Validar que el nombre no esté vacío antes de crear
-        // TODO: Validar que el panel tenga todos los campos obligatorios
-        // TODO: Usar authService para validar que el usuario tenga permisos
+    public Panel crearPanel(String nombre, String color, Integer prioridad,
+                            LocalDate fechaInicio, LocalDate fechaFin, String propietarioId) {
+        // TODO: Validar que propietarioId sea válido usando authService
+        // TODO: Agregar logs de auditoría
+        
+        // Panel.crear() ya valida nombre y fechas según reglas de negocio
+        Panel panel = Panel.crear(nombre, color, prioridad, fechaInicio, fechaFin, propietarioId);
         return panelRepository.guardar(panel);
     }
 
     @Override
     public List<Panel> listarPaneles(String propietarioId) {
-        // TODO: Validar que el propietarioId sea válido
-        // TODO: Usar authService para validar que el usuario tenga permisos
+        // TODO: Validar que propietarioId sea válido usando authService
+        // TODO: Agregar logs de auditoría
         return panelRepository.listarPorPropietario(propietarioId);
     }
 
     @Override
     public Panel actualizarEstado(String panelId, EstadoPanel nuevoEstado) {
-        // TODO: Validar que el panelId sea válido
-        // TODO: Validar que el nuevoEstado sea un estado válido (lanzar excepción si no)
-        // TODO: Usar authService para validar que el usuario tenga permisos
+        // TODO: Validar que propietarioId tenga permisos para actualizar este panel
+        // TODO: Agregar logs de auditoría
+        
         Panel panel = panelRepository.buscarPorId(panelId)
                 .orElseThrow(() -> new IllegalArgumentException("Panel no encontrado: " + panelId));
-        panel.setEstado(nuevoEstado);
+        
+        // cambiarEstado() ya implementa idempotencia según reglas de negocio
+        panel.cambiarEstado(nuevoEstado);
         return panelRepository.actualizar(panel);
     }
 }

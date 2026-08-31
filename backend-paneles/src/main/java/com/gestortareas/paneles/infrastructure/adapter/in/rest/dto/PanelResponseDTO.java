@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -17,4 +18,5 @@ public class PanelResponseDTO {
     private LocalDate fechaFin;
     private Integer prioridad;
     private String propietarioId;
+    private LocalDateTime fechaCreacion;
 }

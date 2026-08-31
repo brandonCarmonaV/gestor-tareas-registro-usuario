@@ -15,9 +15,6 @@ public class Panel {
     private String propietarioId;
     private LocalDateTime fechaCreacion;
 
-    public Panel() {
-    }
-
     private Panel(String id, String nombre, String color, EstadoPanel estado, LocalDate fechaInicio,
                   LocalDate fechaFin, Integer prioridad, String propietarioId, LocalDateTime fechaCreacion) {
         this.id = id;
@@ -86,21 +83,27 @@ public class Panel {
         }
     }
 
+    /**
+     * Renombra el panel con validación de reglas de negocio.
+     * El nombre no puede ser null o vacío.
+     * 
+     * @param nuevoNombre el nuevo nombre del panel
+     * @throws IllegalArgumentException si el nombre es null o vacío
+     */
+    public void renombrar(String nuevoNombre) {
+        if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del panel es obligatorio y no puede estar vacío");
+        }
+        this.nombre = nuevoNombre.trim();
+    }
+
     // Getters y Setters
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getNombre() {
         return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
     }
 
     public String getColor() {
@@ -115,24 +118,12 @@ public class Panel {
         return estado;
     }
 
-    public void setEstado(EstadoPanel estado) {
-        this.estado = estado;
-    }
-
     public LocalDate getFechaInicio() {
         return fechaInicio;
     }
 
-    public void setFechaInicio(LocalDate fechaInicio) {
-        this.fechaInicio = fechaInicio;
-    }
-
     public LocalDate getFechaFin() {
         return fechaFin;
-    }
-
-    public void setFechaFin(LocalDate fechaFin) {
-        this.fechaFin = fechaFin;
     }
 
     public Integer getPrioridad() {
@@ -147,15 +138,7 @@ public class Panel {
         return propietarioId;
     }
 
-    public void setPropietarioId(String propietarioId) {
-        this.propietarioId = propietarioId;
-    }
-
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
-    }
-
-    public void setFechaCreacion(LocalDateTime fechaCreacion) {
-        this.fechaCreacion = fechaCreacion;
     }
 }
