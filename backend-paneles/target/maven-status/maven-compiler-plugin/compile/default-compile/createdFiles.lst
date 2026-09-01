@@ -18,7 +18,6 @@ com\gestortareas\paneles\infrastructure\adapter\out\persistence\PanelEntity.clas
 com\gestortareas\paneles\BackendPanelesApplication.class
 com\gestortareas\paneles\infrastructure\adapter\out\persistence\PanelRepositoryAdapter.class
 com\gestortareas\paneles\domain\model\EstadoPanel.class
-com\gestortareas\paneles\infrastructure\adapter\out\rmi\AuthRmiClientAdapter.class
 com\gestortareas\paneles\domain\port\out\AuthServicePort.class
 com\gestortareas\paneles\infrastructure\adapter\in\rest\PanelMapper.class
 com\gestortareas\paneles\infrastructure\adapter\out\persistence\PanelJpaRepository.class
