@@ -11,6 +11,7 @@ import com.gestortareas.paneles.infrastructure.adapter.in.rest.dto.PanelResponse
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,10 +53,13 @@ public class PanelController {
     
     private final PanelService panelService;
     private final AuthServicePort authService;
+    private final boolean allowTestUserHeader;
 
-    public PanelController(PanelService panelService, AuthServicePort authService) {
+    public PanelController(PanelService panelService, AuthServicePort authService,
+                           @Value("${app.auth.allow-test-user-header:false}") boolean allowTestUserHeader) {
         this.panelService = panelService;
         this.authService = authService;
+        this.allowTestUserHeader = allowTestUserHeader;
     }
 
     /**
@@ -251,8 +255,8 @@ public class PanelController {
             }
         }
         
-        // Fallback: usar X-User-Id directamente (testing/desarrollo)
-        if (userIdHeader != null && !userIdHeader.trim().isEmpty()) {
+        // Fallback disponible solo cuando el servidor se ejecuta con el perfil de pruebas.
+        if (allowTestUserHeader && userIdHeader != null && !userIdHeader.trim().isEmpty()) {
             logger.info("Usando fallback X-User-Id (development mode)");
             return userIdHeader.trim();
         }
