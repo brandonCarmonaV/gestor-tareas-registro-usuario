@@ -1,6 +1,7 @@
 package com.gestortareas.paneles.infrastructure.adapter.out.persistence;
 
-import com.gestortareas.paneles.domain.model.EstadoPanel;
+import rmi.shared.EstadoPanel;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

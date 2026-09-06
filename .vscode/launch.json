@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-BackendPanelesApplication<backend-paneles>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.gestortareas.paneles.BackendPanelesApplication",
+            "projectName": "backend-paneles",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

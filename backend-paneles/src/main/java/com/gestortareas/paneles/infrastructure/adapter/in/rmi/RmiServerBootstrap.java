@@ -1,5 +1,7 @@
 package com.gestortareas.paneles.infrastructure.adapter.in.rmi;
 
+import rmi.shared.PanelRemoteService;
+
 import com.gestortareas.paneles.application.service.PanelService;
 import org.springframework.stereotype.Component;
 

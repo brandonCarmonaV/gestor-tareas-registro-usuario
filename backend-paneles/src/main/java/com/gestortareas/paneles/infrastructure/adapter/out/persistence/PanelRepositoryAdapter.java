@@ -1,6 +1,7 @@
 package com.gestortareas.paneles.infrastructure.adapter.out.persistence;
 
-import com.gestortareas.paneles.domain.model.Panel;
+import rmi.shared.Panel;
+
 import com.gestortareas.paneles.domain.port.out.PanelRepositoryPort;
 import org.springframework.stereotype.Component;
 

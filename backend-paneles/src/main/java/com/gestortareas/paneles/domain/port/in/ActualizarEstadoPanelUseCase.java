@@ -1,7 +1,7 @@
 package com.gestortareas.paneles.domain.port.in;
 
-import com.gestortareas.paneles.domain.model.EstadoPanel;
-import com.gestortareas.paneles.domain.model.Panel;
+import rmi.shared.Panel;
+import rmi.shared.EstadoPanel;
 
 /**
  * Use Case para actualizar el estado de un panel.

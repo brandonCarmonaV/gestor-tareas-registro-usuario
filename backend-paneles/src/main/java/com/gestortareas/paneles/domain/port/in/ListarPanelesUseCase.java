@@ -1,6 +1,6 @@
 package com.gestortareas.paneles.domain.port.in;
 
-import com.gestortareas.paneles.domain.model.Panel;
+import rmi.shared.Panel;
 
 import java.util.List;
 
