@@ -2,12 +2,14 @@ package com.gestortareas.paneles.infrastructure.adapter.out.auth;
 
 import com.gestortareas.paneles.domain.port.out.AuthServicePort;
 import com.gestortareas.paneles.infrastructure.config.RmiConfig;
+import rmi.shared.AuthRmiPort;
 import org.springframework.stereotype.Component;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -31,9 +33,10 @@ import java.util.logging.Logger;
 public class AuthRmiClientAdapter implements AuthServicePort {
 
     private static final Logger logger = Logger.getLogger(AuthRmiClientAdapter.class.getName());
+    private static final String SERVICE_NAME = "LoginService";
     
     private final RmiConfig rmiConfig;
-    private AuthRemoteService authRemoteService;
+    private AuthRmiPort authRemoteService;
     private boolean initialized = false;
 
     public AuthRmiClientAdapter(RmiConfig rmiConfig) {
@@ -64,10 +67,11 @@ public class AuthRmiClientAdapter implements AuthServicePort {
             logger.info("Validando token contra backend de Auth remoto...");
 
             // Obtener conexión al servicio remoto (lazy initialization)
-            AuthRemoteService authService = obtenerAuthRemoteService();
+            AuthRmiPort authService = obtenerAuthRemoteService();
 
             // Llamar al servicio remoto para validar token
-            String userId = authService.validarToken(token);
+            Map<String, String> subjectData = authService.extractSubject(token);
+            String userId = extraerUserId(subjectData);
 
             if (userId == null || userId.trim().isEmpty()) {
                 logger.warning("Backend de Auth retornó userId inválido");
@@ -107,7 +111,7 @@ public class AuthRmiClientAdapter implements AuthServicePort {
      * @return servicio remoto de Auth
      * @throws RemoteException si no se puede conectar al registry remoto
      */
-    private AuthRemoteService obtenerAuthRemoteService() throws RemoteException {
+    private AuthRmiPort obtenerAuthRemoteService() throws RemoteException {
         // Si ya está inicializado y la conexión es válida, retornarla
         if (initialized && authRemoteService != null) {
             try {
@@ -125,13 +129,13 @@ public class AuthRmiClientAdapter implements AuthServicePort {
         try {
             // Construir URL RMI
             String rmiUrl = "rmi://" + rmiConfig.authHost() + ":" + rmiConfig.authPort() + 
-                           "/" + AuthRemoteService.SERVICE_NAME;
+                           "/" + SERVICE_NAME;
             
             logger.info("Conectando al backend de Auth remoto: " + rmiUrl);
 
             // Obtener registry y hacer lookup del servicio
             Registry registry = LocateRegistry.getRegistry(rmiConfig.authHost(), rmiConfig.authPort());
-            authRemoteService = (AuthRemoteService) registry.lookup(AuthRemoteService.SERVICE_NAME);
+            authRemoteService = (AuthRmiPort) registry.lookup(SERVICE_NAME);
 
             initialized = true;
             
@@ -139,7 +143,7 @@ public class AuthRmiClientAdapter implements AuthServicePort {
             return authRemoteService;
 
         } catch (NotBoundException ex) {
-            logger.severe("Servicio '" + AuthRemoteService.SERVICE_NAME + 
+            logger.severe("Servicio '" + SERVICE_NAME + 
                          "' no está registrado en el backend de Auth. " +
                          "Verifica que AuthServiceImpl esté corriendo en " +
                          rmiConfig.authHost() + ":" + rmiConfig.authPort());
@@ -153,5 +157,20 @@ public class AuthRmiClientAdapter implements AuthServicePort {
                          " - " + ex.getMessage());
             throw ex;
         }
+    }
+
+    private String extraerUserId(Map<String, String> subjectData) {
+        if (subjectData == null || subjectData.isEmpty()) {
+            return null;
+        }
+
+        for (String key : new String[] {"userId", "user_id", "subject", "sub", "id"}) {
+            String value = subjectData.get(key);
+            if (value != null && !value.trim().isEmpty()) {
+                return value.trim();
+            }
+        }
+
+        return null;
     }
 }

@@ -17,6 +17,6 @@ spring:
     open-in-view: false
 
 rmi:
-  registry-port: ${RMI_REGISTRY_PORT:1100}
-  auth-host: ${AUTH_RMI_HOST:localhost}
-  auth-port: ${AUTH_RMI_PORT:1099}
+  registry-port: 1100
+  auth-host: localhost
+  auth-port: 1099
