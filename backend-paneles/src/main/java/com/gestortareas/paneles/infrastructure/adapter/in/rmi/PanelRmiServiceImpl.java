@@ -1,29 +1,18 @@
 package com.gestortareas.paneles.infrastructure.adapter.in.rmi;
 
-import rmi.shared.PanelRemoteService;
-import rmi.shared.RmiPanelData;
-
 import com.gestortareas.paneles.application.exception.UnauthorizedException;
 import com.gestortareas.paneles.application.exception.ValidationException;
 import com.gestortareas.paneles.application.service.PanelService;
 import com.gestortareas.paneles.domain.model.Panel;
+import rmi.shared.PanelRemoteService;
+import rmi.shared.RmiPanelData;
+
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
-/**
- * Adapter RMI que implementa PanelRemoteService.
- * 
- * Responsabilidades:
- * - Exponer los use cases de Panel vía RMI
- * - Delegar toda la lógica a PanelService
- * - Convertir excepciones de aplicación en RemoteException si es necesario
- * 
- * Nota: Los clientes RMI pasan Panel ya construido con propietarioId validado
- * en el lado del cliente (o confiamos en que está bien informado).
- */
 public class PanelRmiServiceImpl extends UnicastRemoteObject implements PanelRemoteService {
 
     private static final Logger logger = Logger.getLogger(PanelRmiServiceImpl.class.getName());
@@ -35,41 +24,25 @@ public class PanelRmiServiceImpl extends UnicastRemoteObject implements PanelRem
         this.panelService = panelService;
     }
 
-    /**
-     * Crea un nuevo panel vía RMI.
-     * 
-     * Flujo:
-     * 1. Valida que Panel tenga nombre y propietarioId
-     * 2. Delega a panelService.crearPanel() extrayendo los datos del Panel
-     * 3. Retorna panel creado
-     * 
-     * @param panel panel con nombre, color, prioridad, fechas y propietarioId ya informados
-     * @return panel creado con id único, estado PENDIENTE, fechaCreacion asignada
-     * @throws RemoteException si hay error en la comunicación RMI
-     * @throws IllegalArgumentException si panel.nombre vacío o fechas inválidas
-     */
     @Override
     public RmiPanelData crearPanel(RmiPanelData panel) throws RemoteException {
         try {
             if (panel == null) {
                 throw new IllegalArgumentException("Panel no puede ser null");
             }
-            
-            logger.info("RMI: Creando panel con nombre='" + panel.getNombre() + 
-                       "' propietarioId='" + panel.getPropietarioId() + "'");
-            
-            // Delegar a PanelService con los parámetros extraídos del Panel
+
+            logger.info("RMI: Creando panel con nombre='" + panel.getNombre()
+                    + "' propietarioId='" + panel.getPropietarioId() + "'");
+
             Panel panelCreado = panelService.crearPanel(
-                panel.getNombre(),
-                panel.getColor(),
-                panel.getPrioridad(),
-                panel.getFechaInicio(),
-                panel.getFechaFin(),
-                panel.getPropietarioId()
-            );
-            
+                    panel.getNombre(),
+                    panel.getColor(),
+                    panel.getPrioridad(),
+                    panel.getFechaInicio(),
+                    panel.getFechaFin(),
+                    panel.getPropietarioId());
+
             return toRmiPanelData(panelCreado);
-            
         } catch (ValidationException | UnauthorizedException ex) {
             logger.severe("Error en RMI crearPanel: " + ex.getMessage());
             throw new RemoteException(ex.getMessage(), ex);
@@ -79,14 +52,6 @@ public class PanelRmiServiceImpl extends UnicastRemoteObject implements PanelRem
         }
     }
 
-    /**
-     * Lista paneles de un propietario vía RMI.
-     * 
-     * @param propietarioId id del propietario
-     * @return lista de paneles del propietario (puede estar vacía, nunca null)
-     * @throws RemoteException si hay error en la comunicación RMI
-     * @throws UnauthorizedException si propietarioId no es válido
-     */
     @Override
     public List<RmiPanelData> listarPaneles(String propietarioId) throws RemoteException {
         try {
@@ -99,7 +64,7 @@ public class PanelRmiServiceImpl extends UnicastRemoteObject implements PanelRem
             List<Panel> paneles = panelService.listarPaneles(propietarioId);
             
             logger.info("RMI: Retornando " + paneles.size() + " paneles");
-                return paneles.stream()
+            return paneles.stream()
                     .map(this::toRmiPanelData)
                     .collect(Collectors.toList());
             

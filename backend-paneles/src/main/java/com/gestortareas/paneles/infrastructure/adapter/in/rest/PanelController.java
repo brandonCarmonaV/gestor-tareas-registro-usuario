@@ -1,10 +1,9 @@
 package com.gestortareas.paneles.infrastructure.adapter.in.rest;
 
-import com.gestortareas.paneles.domain.model.Panel;
-
 import com.gestortareas.paneles.application.exception.UnauthorizedException;
 import com.gestortareas.paneles.application.exception.ValidationException;
 import com.gestortareas.paneles.application.service.PanelService;
+import com.gestortareas.paneles.domain.model.Panel;
 import com.gestortareas.paneles.domain.port.out.AuthServicePort;
 import com.gestortareas.paneles.infrastructure.adapter.in.rest.dto.ActualizarPanelRequestDTO;
 import com.gestortareas.paneles.infrastructure.adapter.in.rest.dto.PanelRequestDTO;
@@ -27,27 +26,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-/**
- * Controlador REST (Adapter de entrada) para operaciones sobre paneles.
- * 
- * Responsabilidades:
- * - Recibir solicitudes HTTP
- * - Extraer y validar propietarioId del usuario autenticado
- * - Convertir entre DTOs y objetos del dominio
- * - Delegar lógica a PanelService
- * - Retornar respuestas HTTP apropiadas
- * - Manejar excepciones y retornar códigos HTTP correctos
- * 
- * Nota sobre autenticación:
- * - Por ahora recibe X-User-Id en header (para testing)
- * - En FASE 7: se integrará con Spring Security / JWT
- * 
- * Endpoints:
- * - POST   /api/paneles              → crear panel
- * - GET    /api/paneles              → listar paneles del usuario autenticado
- * - PUT    /api/paneles/{id}          → actualizar panel
- * - DELETE /api/paneles/{id}          → eliminar panel
- */
 @RestController
 @RequestMapping("/api/paneles")
 public class PanelController {
@@ -65,28 +43,6 @@ public class PanelController {
         this.allowTestUserHeader = allowTestUserHeader;
     }
 
-    /**
-     * Crea un nuevo panel.
-     * 
-     * Flujo:
-     * 1. Extrae token JWT del header Authorization
-     * 2. Valida token contra backend de Auth usando AuthServicePort
-     * 3. Extrae propietarioId del resultado
-     * 4. Extrae parámetros del DTO
-     * 5. Llama a panelService.crearPanel()
-     * 6. Convierte resultado a PanelResponseDTO
-     * 7. Retorna 201 Created con el panel creado
-     * 
-     * Códigos HTTP:
-     * - 201 Created: Panel creado exitosamente
-     * - 400 Bad Request: Validación fallida (nombre vacío, fechas inválidas, etc.)
-     * - 401 Unauthorized: Token inválido o usuario no autenticado
-     * 
-     * @param request DTO con datos del panel a crear
-     * @param authHeader header Authorization con token JWT (ej: "Bearer <token>")
-     * @param userIdHeader header X-User-Id como fallback para testing (ignorado si authHeader presente)
-     * @return Panel creado con código 201
-     */
     @PostMapping
     public ResponseEntity<PanelResponseDTO> crearPanel(
             @Valid @RequestBody PanelRequestDTO request,
@@ -96,7 +52,6 @@ public class PanelController {
         try {
             String propietarioId = extraerPropietarioId(authHeader, userIdHeader);
             
-            // Llamar a panelService con parámetros individuales
             Panel panelCreado = panelService.crearPanel(
                     request.getNombre(),
                     request.getColor(),
@@ -123,24 +78,6 @@ public class PanelController {
         }
     }
 
-    /**
-     * Lista todos los paneles del usuario autenticado.
-     * 
-     * Flujo:
-     * 1. Extrae token JWT del header Authorization o X-User-Id para fallback
-     * 2. Valida token y obtiene propietarioId
-     * 3. Llama a panelService.listarPaneles()
-     * 4. Convierte lista de Panel a lista de PanelResponseDTO
-     * 5. Retorna 200 OK con lista
-     * 
-     * Códigos HTTP:
-     * - 200 OK: Lista de paneles (puede estar vacía)
-     * - 401 Unauthorized: Usuario no autenticado o inválido
-     * 
-     * @param authHeader token JWT en Authorization header
-     * @param userIdHeader propietarioId del usuario autenticado (header X-User-Id) como fallback
-     * @return Lista de paneles del usuario
-     */
     @GetMapping
     public ResponseEntity<List<PanelResponseDTO>> listarPaneles(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
@@ -211,37 +148,13 @@ public class PanelController {
         }
     }
 
-    /**
-     * Extrae el propietarioId del usuario autenticado.
-     * 
-     * Estrategia FASE 7 implementada:
-     * 1. Preferir token JWT en Authorization header
-     * 2. Fallback: usar X-User-Id directamente (testing/desarrollo)
-     * 3. Si ninguno disponible: lanzar UnauthorizedException
-     * 
-     * Con token JWT:
-     * - Extrae token del header "Authorization: Bearer <token>"
-     * - Valida token usando AuthServicePort.validarUsuario()
-     * - Retorna el propietarioId/userId validado por el backend de Auth remoto
-     * 
-     * Con X-User-Id:
-     * - Retorna el valor del header sin validación (solo para testing)
-     * 
-     * @param authHeader valor del header Authorization (puede ser null)
-     * @param userIdHeader valor del header X-User-Id como fallback (puede ser null)
-     * @return propietarioId del usuario autenticado
-     * @throws UnauthorizedException si no se puede extraer propietarioId válido
-     */
     private String extraerPropietarioId(String authHeader, String userIdHeader) {
-        // FASE 7: Preferir token JWT en Authorization header
         if (authHeader != null && !authHeader.trim().isEmpty()) {
             try {
-                // Extraer token de "Bearer <token>"
                 String token = extraerTokenDelHeader(authHeader);
                 
                 logger.info("Validando token JWT contra backend de Auth remoto...");
                 
-                // Usar AuthServicePort para validar token y obtener userId
                 String propietarioId = authService.validarUsuario(token);
                 
                 logger.info("Token validado exitosamente. propietarioId=" + propietarioId);
@@ -253,7 +166,6 @@ public class PanelController {
             }
         }
         
-        // Fallback disponible solo cuando el servidor se ejecuta con el perfil de pruebas.
         if (allowTestUserHeader && userIdHeader != null && !userIdHeader.trim().isEmpty()) {
             logger.info("Usando fallback X-User-Id (development mode)");
             return userIdHeader.trim();
@@ -265,15 +177,6 @@ public class PanelController {
         );
     }
 
-    /**
-     * Extrae el token del header Authorization.
-     * 
-     * Espera formato: "Bearer <token>"
-     * 
-     * @param authHeader valor del header Authorization
-     * @return token sin el prefijo "Bearer "
-     * @throws IllegalArgumentException si el formato es inválido
-     */
     private String extraerTokenDelHeader(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new IllegalArgumentException("Authorization header debe tener formato 'Bearer <token>'");

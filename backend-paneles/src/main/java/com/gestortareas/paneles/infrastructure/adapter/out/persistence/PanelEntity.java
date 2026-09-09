@@ -12,16 +12,6 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Entidad JPA que representa la tabla 'paneles' en la base de datos.
- * 
- * Responsabilidades:
- * - Mapear atributos del Panel a columnas de BD
- * - Persistencia y recuperación vía Hibernate/JPA
- * - No contiene lógica de negocio (esa está en Panel.java del dominio)
- * 
- * Nota: El adapter PanelRepositoryAdapter convierte entre PanelEntity y Panel.
- */
 @Entity
 @Table(name = "paneles")
 public class PanelEntity {
