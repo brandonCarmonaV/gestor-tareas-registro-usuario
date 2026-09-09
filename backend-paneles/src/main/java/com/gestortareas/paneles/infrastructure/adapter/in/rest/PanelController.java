@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,11 +47,11 @@ public class PanelController {
     @PostMapping
     public ResponseEntity<PanelResponseDTO> crearPanel(
             @Valid @RequestBody PanelRequestDTO request,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader) {
+            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader,
+            @CookieValue(value = "access_token", required = false) String cookieToken) {
         
         try {
-            String propietarioId = extraerPropietarioId(authHeader, userIdHeader);
+            String propietarioId = extraerPropietarioId(userIdHeader, cookieToken);
             
             Panel panelCreado = panelService.crearPanel(
                     request.getNombre(),
@@ -64,27 +65,22 @@ public class PanelController {
             PanelResponseDTO response = PanelMapper.toPanelResponseDTO(panelCreado);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
             
-        } catch (ValidationException ex) {
-            logger.warning("Validación fallida al crear panel: " + ex.getMessage());
+        } catch (ValidationException | IllegalArgumentException ex) {
+            logger.warning("Error de validación al crear panel: " + ex.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            
         } catch (UnauthorizedException ex) {
             logger.warning("Usuario no autorizado para crear panel: " + ex.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            
-        } catch (IllegalArgumentException ex) {
-            logger.warning("Error de validación: " + ex.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
 
     @GetMapping
     public ResponseEntity<List<PanelResponseDTO>> listarPaneles(
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader) {
+            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader,
+            @CookieValue(value = "access_token", required = false) String cookieToken) {
         
         try {
-            String propietarioId = extraerPropietarioId(authHeader, userIdHeader);
+            String propietarioId = extraerPropietarioId(userIdHeader, cookieToken);
             
             List<Panel> paneles = panelService.listarPaneles(propietarioId);
             
@@ -97,7 +93,6 @@ public class PanelController {
         } catch (UnauthorizedException ex) {
             logger.warning("Usuario no autorizado para listar paneles: " + ex.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            
         } catch (IllegalArgumentException ex) {
             logger.warning("Error al listar paneles: " + ex.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -108,11 +103,11 @@ public class PanelController {
     public ResponseEntity<PanelResponseDTO> actualizarPanel(
             @PathVariable("id") String panelId,
             @Valid @RequestBody ActualizarPanelRequestDTO request,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader) {
+            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader,
+            @CookieValue(value = "access_token", required = false) String cookieToken) {
         
         try {
-            String propietarioId = extraerPropietarioId(authHeader, userIdHeader);
+            String propietarioId = extraerPropietarioId(userIdHeader, cookieToken);
 
             Panel panelActualizado = panelService.actualizarPanel(
                     panelId, request.getNombre(), request.getColor(),
@@ -125,7 +120,6 @@ public class PanelController {
         } catch (UnauthorizedException ex) {
             logger.warning("Usuario no autorizado para actualizar panel: " + ex.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            
         } catch (IllegalArgumentException ex) {
             logger.warning("Error al actualizar panel: " + ex.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -135,10 +129,10 @@ public class PanelController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarPanel(
             @PathVariable("id") String panelId,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader) {
+            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader,
+            @CookieValue(value = "access_token", required = false) String cookieToken) {
         try {
-            String propietarioId = extraerPropietarioId(authHeader, userIdHeader);
+            String propietarioId = extraerPropietarioId(userIdHeader, cookieToken);
             panelService.eliminarPanel(panelId, propietarioId);
             return ResponseEntity.noContent().build();
         } catch (UnauthorizedException ex) {
@@ -148,46 +142,24 @@ public class PanelController {
         }
     }
 
-    private String extraerPropietarioId(String authHeader, String userIdHeader) {
-        if (authHeader != null && !authHeader.trim().isEmpty()) {
+    // Extracción limpia basada exclusivamente en Cookies y Fallback de desarrollo
+    private String extraerPropietarioId(String userIdHeader, String cookieToken) {
+        // 1. Validar la cookie HttpOnly enviada automáticamente por el navegador
+        if (cookieToken != null && !cookieToken.trim().isEmpty()) {
             try {
-                String token = extraerTokenDelHeader(authHeader);
-                
-                logger.info("Validando token JWT contra backend de Auth remoto...");
-                
-                String propietarioId = authService.validarUsuario(token);
-                
-                logger.info("Token validado exitosamente. propietarioId=" + propietarioId);
-                return propietarioId;
-                
+                logger.info("Validando token JWT obtenido desde la Cookie 'access_token'...");
+                return authService.validarUsuario(cookieToken);
             } catch (RuntimeException ex) {
-                logger.warning("Error validando token JWT: " + ex.getMessage());
-                throw new UnauthorizedException("Token de autenticación inválido o expirado", ex);
+                throw new UnauthorizedException("Token en cookie inválido o expirado", ex);
             }
         }
         
+        // 2. Fallback de desarrollo (X-User-Id) para pruebas manuales rápidas
         if (allowTestUserHeader && userIdHeader != null && !userIdHeader.trim().isEmpty()) {
             logger.info("Usando fallback X-User-Id (development mode)");
             return userIdHeader.trim();
         }
         
-        throw new UnauthorizedException(
-            "Usuario no autenticado. Proporcionar token JWT en header Authorization " +
-            "o X-User-Id para testing (development mode)"
-        );
-    }
-
-    private String extraerTokenDelHeader(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("Authorization header debe tener formato 'Bearer <token>'");
-        }
-        
-        String token = authHeader.substring("Bearer ".length()).trim();
-        
-        if (token.isEmpty()) {
-            throw new IllegalArgumentException("Token vacío en Authorization header");
-        }
-        
-        return token;
+        throw new UnauthorizedException("Usuario no autenticado (falta cookie 'access_token' o header de prueba)");
     }
 }
