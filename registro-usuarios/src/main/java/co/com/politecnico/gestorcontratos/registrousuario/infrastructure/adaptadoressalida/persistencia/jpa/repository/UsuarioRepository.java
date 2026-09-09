@@ -11,12 +11,12 @@ import co.com.politecnico.gestorcontratos.registrousuario.infrastructure.adaptad
 import co.com.politecnico.gestorcontratos.registrousuario.infrastructure.mapeadores.MapeadorSolicitudUsuario;
 
 @Repository
-public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long>, puertosDeSalidaUsuarioRegistro {
+public interface UsuarioRepository extends JpaRepository<UsuarioEntity, String>, puertosDeSalidaUsuarioRegistro {
 
 	boolean existsByCorreoElectronico(String correo);
 
 
-	boolean existsByCorreoElectronicoAndIdNot(String correo, Long id);
+	boolean existsByCorreoElectronicoAndIdNot(String correo, String id);
 
 	@Override
 	default void guardarUsuario(Usuario usuario) {
@@ -29,18 +29,18 @@ public interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long>, p
 	}
 
 	@Override
-	default Optional<Usuario> buscarUsuarioPorId(Long id) {
-		return findById(id).map(MapeadorSolicitudUsuario::aDominio);
+	default Optional<Usuario> buscarUsuarioPorId(String id) {
+		return findById(id).map(MapeadorSolicitudUsuario::mapperUsuarioDominio);
 	}
 
 	@Override
 	default Usuario actualizarUsuario(Usuario usuario) {
 		UsuarioEntity persistido = save(MapeadorSolicitudUsuario.mapperUsuarioEntity(usuario));
-		return MapeadorSolicitudUsuario.aDominio(persistido);
+		return MapeadorSolicitudUsuario.mapperUsuarioDominio(persistido);
 	}
 
 	@Override
-	default boolean existeUsuarioConCorreoDistintoA(String correo, Long idExcluir) {
+	default boolean existeUsuarioConCorreoDistintoA(String correo, String idExcluir) {
 		return existsByCorreoElectronicoAndIdNot(correo, idExcluir);
 	}
 }

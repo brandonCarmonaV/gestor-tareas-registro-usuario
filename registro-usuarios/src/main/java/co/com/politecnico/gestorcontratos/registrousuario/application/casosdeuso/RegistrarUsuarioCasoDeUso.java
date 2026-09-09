@@ -8,5 +8,5 @@ public interface RegistrarUsuarioCasoDeUso {
 
     void registrarUsuario(SolicitudRegistroUsuarioDTO registroUsuarioDto);
 
-    ResultadoConsultaUsuarioDTO editarUsuario(Long id, SolicitudEdicionUsuarioDTO edicion);
+    ResultadoConsultaUsuarioDTO editarUsuario(String id, SolicitudEdicionUsuarioDTO edicion);
 }

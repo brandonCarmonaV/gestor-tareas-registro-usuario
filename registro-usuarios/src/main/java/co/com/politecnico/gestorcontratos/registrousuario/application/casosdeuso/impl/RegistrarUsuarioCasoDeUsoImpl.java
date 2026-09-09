@@ -29,12 +29,12 @@ public final class RegistrarUsuarioCasoDeUsoImpl implements RegistrarUsuarioCaso
                     "Ya existe un usuario registrado con el correo " + correo + ".");
         }
 
-        Usuario usuario = new Usuario(null, solicitud.nombreCompleto(), correo, password);
+        Usuario usuario = new Usuario(Long.valueOf(solicitud.id()), solicitud.nombreCompleto(), correo, password);
         repositorioUsuario.guardarUsuario(usuario);
     }
 
     @Override
-    public ResultadoConsultaUsuarioDTO editarUsuario(Long id, SolicitudEdicionUsuarioDTO edicion) {
+    public ResultadoConsultaUsuarioDTO editarUsuario(String id, SolicitudEdicionUsuarioDTO edicion) {
 
         Usuario usuarioActual = repositorioUsuario.buscarUsuarioPorId(id)
                 .orElseThrow(() -> new ExcepcionGeneralesReglaNegocio(

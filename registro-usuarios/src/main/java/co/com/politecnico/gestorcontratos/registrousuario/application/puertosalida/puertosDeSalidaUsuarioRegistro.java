@@ -9,15 +9,10 @@ public interface puertosDeSalidaUsuarioRegistro {
     void guardarUsuario(Usuario usuario);
 
     boolean validarUsuarioExistente(String correo);
-
-    Optional<Usuario> buscarUsuarioPorId(Long id);
+    
+	Optional<Usuario> buscarUsuarioPorId(String id);
 
     Usuario actualizarUsuario(Usuario usuario);
 
-    /**
-     * Verifica si el correo ya esta siendo usado por un usuario distinto al id
-     * proporcionado. Util al editar para preservar la unicidad sin chocar con
-     * el propio registro.
-     */
-    boolean existeUsuarioConCorreoDistintoA(String correo, Long idExcluir);
+    boolean existeUsuarioConCorreoDistintoA(String correo, String idExcluir);
 }

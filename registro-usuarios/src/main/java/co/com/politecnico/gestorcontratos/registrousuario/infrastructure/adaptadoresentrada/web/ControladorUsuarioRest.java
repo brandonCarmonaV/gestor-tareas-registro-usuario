@@ -36,7 +36,7 @@ public class ControladorUsuarioRest {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<ResultadoConsultaUsuarioDTO> editarUsuario(@PathVariable Long id,
+	public ResponseEntity<ResultadoConsultaUsuarioDTO> editarUsuario(@PathVariable String id,
 			@RequestBody SolicitudEdicionUsuarioDTO edicion) {
 		log.info("REST: solicitud de edicion de usuario id={}", id);
 		ResultadoConsultaUsuarioDTO respuesta = casoDeUso.editarUsuario(id, edicion);
