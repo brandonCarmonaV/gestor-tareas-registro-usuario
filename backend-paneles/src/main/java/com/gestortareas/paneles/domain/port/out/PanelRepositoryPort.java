@@ -10,4 +10,5 @@ public interface PanelRepositoryPort {
     List<Panel> listarPorPropietario(String propietarioId);
     Optional<Panel> buscarPorId(String panelId);
     Panel actualizar(Panel panel);
+    void eliminar(String panelId);
 }

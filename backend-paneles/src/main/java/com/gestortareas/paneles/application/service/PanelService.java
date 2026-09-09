@@ -5,10 +5,8 @@ import rmi.shared.EstadoPanel;
 
 import com.gestortareas.paneles.application.exception.UnauthorizedException;
 import com.gestortareas.paneles.application.exception.ValidationException;
-import com.gestortareas.paneles.domain.port.in.ActualizarEstadoPanelUseCase;
 import com.gestortareas.paneles.domain.port.in.CrearPanelUseCase;
 import com.gestortareas.paneles.domain.port.in.ListarPanelesUseCase;
-import com.gestortareas.paneles.domain.port.out.AuthServicePort;
 import com.gestortareas.paneles.domain.port.out.PanelRepositoryPort;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +19,7 @@ import java.util.logging.Logger;
  * 
  * Responsabilidades:
  * - Orquestar la creación, lectura y actualización de paneles
- * - Validar permisos de usuario usando AuthServicePort
+ * - Aplicar las reglas de autorización sobre los paneles
  * - Asegurar consistencia de datos
  * - Delegar a PanelRepositoryPort para persistencia
  * 
@@ -29,17 +27,14 @@ import java.util.logging.Logger;
  * sino que las utiliza correctamente.
  */
 @Service
-public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase,
-        ActualizarEstadoPanelUseCase {
+public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase {
 
     private static final Logger logger = Logger.getLogger(PanelService.class.getName());
     
     private final PanelRepositoryPort panelRepository;
-    private final AuthServicePort authService;
 
-    public PanelService(PanelRepositoryPort panelRepository, AuthServicePort authService) {
+    public PanelService(PanelRepositoryPort panelRepository) {
         this.panelRepository = panelRepository;
-        this.authService = authService;
     }
 
     /**
@@ -65,16 +60,6 @@ public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase,
     public Panel crearPanel(String nombre, String color, Integer prioridad,
                             LocalDate fechaInicio, LocalDate fechaFin, String propietarioId) {
         
-        // Validar que propietarioId sea un usuario válido y autenticado
-        // En este contexto, propietarioId ya viene del token validado por el controlador
-        // pero revalidamos como medida defensiva
-        try {
-            validarPropietarioId(propietarioId);
-        } catch (RuntimeException ex) {
-            logger.severe("Intento de crear panel con propietarioId inválido: " + propietarioId);
-            throw new UnauthorizedException("Propietario inválido o no autenticado: " + propietarioId, ex);
-        }
-
         try {
             // Panel.crear() valida nombre y fechas según reglas de negocio
             Panel panel = Panel.crear(nombre, color, prioridad, fechaInicio, fechaFin, propietarioId);
@@ -108,109 +93,45 @@ public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase,
     @Override
     public List<Panel> listarPaneles(String propietarioId) {
         
-        // Validar que propietarioId sea un usuario válido
-        try {
-            validarPropietarioId(propietarioId);
-        } catch (RuntimeException ex) {
-            logger.severe("Intento de listar paneles con propietarioId inválido: " + propietarioId);
-            throw new UnauthorizedException("Propietario inválido o no autenticado: " + propietarioId, ex);
-        }
-
         List<Panel> paneles = panelRepository.listarPorPropietario(propietarioId);
         
         logger.info("Listados " + paneles.size() + " paneles del propietario: " + propietarioId);
         return paneles;
     }
 
-    /**
-     * Actualiza el estado de un panel.
-     * 
-     * Flujo:
-     * 1. Busca el panel por id
-     * 2. Valida que propietarioId sea el propietario (autorización)
-     * 3. Usa panel.cambiarEstado() para cambio idempotente
-     * 4. Persiste cambio
-     * 5. Retorna panel actualizado
-     * 
-     * @param panelId id del panel a actualizar
-     * @param nuevoEstado nuevo estado deseado
-     * @param propietarioId id del usuario que solicita la actualización (debe ser el propietario)
-     * @return panel actualizado
-     * @throws IllegalArgumentException si panel no existe
-     * @throws UnauthorizedException si propietarioId no es el propietario del panel
-     */
-    public Panel actualizarEstado(String panelId, EstadoPanel nuevoEstado, String propietarioId) {
-        
-        // Buscar panel existente
+    public Panel actualizarPanel(String panelId, String nombre, String color,
+                                 LocalDate fechaInicio, LocalDate fechaFin,
+                                 Integer prioridad, EstadoPanel estado,
+                                 String propietarioId) {
         Panel panel = panelRepository.buscarPorId(panelId)
                 .orElseThrow(() -> {
                     logger.warning("Intento de actualizar panel inexistente: " + panelId);
                     return new IllegalArgumentException("Panel no encontrado: " + panelId);
                 });
 
-        // Validar que el usuario sea el propietario del panel
         if (!panel.getPropietarioId().equals(propietarioId)) {
             logger.severe("Intento de actualizar panel de otro usuario. Panel: " + panelId + 
                          ", Propietario: " + panel.getPropietarioId() + ", Usuario: " + propietarioId);
             throw new UnauthorizedException("No tienes permisos para actualizar este panel");
         }
 
-        // Cambiar estado usando método del dominio (implementa idempotencia)
-        panel.cambiarEstado(nuevoEstado);
-        
-        // Persistir cambio
-        Panel panelActualizado = panelRepository.actualizar(panel);
-        
-        logger.info("Panel actualizado: " + panelId + " a estado: " + nuevoEstado);
-        return panelActualizado;
-    }
-
-    /**
-     * Implementación requerida por interfaz ActualizarEstadoPanelUseCase.
-     * Esta firma NO recibe propietarioId (será pasado por el controlador).
-     * El controlador REST debe extraer propietarioId del token y llamar a
-     * actualizarEstado(String, EstadoPanel, String) en su lugar.
-     * 
-     * @deprecated Usar actualizarEstado(String panelId, EstadoPanel nuevoEstado, String propietarioId)
-     */
-    @Deprecated
-    @Override
-    public Panel actualizarEstado(String panelId, EstadoPanel nuevoEstado) {
-        throw new UnsupportedOperationException(
-            "Use actualizarEstado(String panelId, EstadoPanel nuevoEstado, String propietarioId) " +
-            "passando el propietarioId extraído del token de autenticación");
-    }
-
-    /**
-     * Valida que un propietarioId sea un usuario autenticado válido.
-     * 
-     * Esta es una validación defensiva: asume que el propietarioId ya fue extraído
-     * y validado contra el token en el controlador (REST o RMI).
-     * 
-     * Flujo esperado (implementado en adapters de entrada):
-     * 1. Controlador recibe token en header
-     * 2. Controlador llama a AuthServicePort.validarUsuario(token)
-     * 3. Controlador extrae propietarioId del resultado
-     * 4. Controlador llama a PanelService con propietarioId validado
-     * 5. PanelService valida que propietarioId no sea null/vacío (defensivo)
-     * 
-     * FASE 7: AuthRmiClientAdapter implementa AuthServicePort usando RMI
-     * para conectar con el backend de autenticación remoto.
-     * 
-     * @param propietarioId id a validar
-     * @throws IllegalArgumentException si es null o vacío
-     */
-    private void validarPropietarioId(String propietarioId) {
-        if (propietarioId == null || propietarioId.trim().isEmpty()) {
-            throw new IllegalArgumentException("propietarioId no puede ser null o vacío");
+        try {
+            panel.actualizarDatos(nombre, color, fechaInicio, fechaFin, prioridad, estado);
+            return panelRepository.actualizar(panel);
+        } catch (IllegalArgumentException ex) {
+            throw new ValidationException("Error de validación al actualizar panel: " + ex.getMessage(), ex);
         }
-        
-        // Validación defensiva completada.
-        // La validación real del token ocurre en el controlador (adapter de entrada)
-        // antes de llegar aquí, usando AuthServicePort (implementado por AuthRmiClientAdapter).
-        // String usuarioValidado = authService.validarUsuario(token);
-        // if (!usuarioValidado.equals(propietarioId)) {
-        //     throw new IllegalArgumentException("propietarioId no coincide con usuario autenticado");
-        // }
     }
+
+    public void eliminarPanel(String panelId, String propietarioId) {
+        Panel panel = panelRepository.buscarPorId(panelId)
+                .orElseThrow(() -> new IllegalArgumentException("Panel no encontrado: " + panelId));
+
+        if (!panel.getPropietarioId().equals(propietarioId)) {
+            throw new UnauthorizedException("No tienes permisos para eliminar este panel");
+        }
+
+        panelRepository.eliminar(panelId);
+    }
+
 }

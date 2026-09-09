@@ -157,6 +157,17 @@ public class PanelRepositoryAdapter implements PanelRepositoryPort {
         }
     }
 
+    @Override
+    public void eliminar(String panelId) {
+        try {
+            repository.deleteById(panelId);
+            logger.info("Panel eliminado de BD: " + panelId);
+        } catch (Exception ex) {
+            logger.severe("Error al eliminar panel: " + ex.getMessage());
+            throw new RuntimeException("Error al eliminar panel", ex);
+        }
+    }
+
     /**
      * Mapea Panel (dominio) a PanelEntity (JPA).
      * 

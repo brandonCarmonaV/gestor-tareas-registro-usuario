@@ -1,12 +1,12 @@
 package com.gestortareas.paneles.infrastructure.adapter.in.rest;
 
 import rmi.shared.Panel;
-import rmi.shared.EstadoPanel;
 
 import com.gestortareas.paneles.application.exception.UnauthorizedException;
 import com.gestortareas.paneles.application.exception.ValidationException;
 import com.gestortareas.paneles.application.service.PanelService;
 import com.gestortareas.paneles.domain.port.out.AuthServicePort;
+import com.gestortareas.paneles.infrastructure.adapter.in.rest.dto.ActualizarPanelRequestDTO;
 import com.gestortareas.paneles.infrastructure.adapter.in.rest.dto.PanelRequestDTO;
 import com.gestortareas.paneles.infrastructure.adapter.in.rest.dto.PanelResponseDTO;
 import jakarta.validation.Valid;
@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -44,7 +45,8 @@ import java.util.stream.Collectors;
  * Endpoints:
  * - POST   /api/paneles              → crear panel
  * - GET    /api/paneles              → listar paneles del usuario autenticado
- * - PUT    /api/paneles/{id}/estado  → cambiar estado de panel
+ * - PUT    /api/paneles/{id}          → actualizar panel
+ * - DELETE /api/paneles/{id}          → eliminar panel
  */
 @RestController
 @RequestMapping("/api/paneles")
@@ -165,41 +167,20 @@ public class PanelController {
         }
     }
 
-    /**
-     * Cambia el estado de un panel existente.
-     * 
-     * Flujo:
-     * 1. Extrae token JWT del header Authorization o X-User-Id para fallback
-     * 2. Valida token y obtiene propietarioId
-     * 3. Valida que usuario sea propietario del panel
-     * 4. Llama a panelService.actualizarEstado() con propietarioId
-     * 5. Convierte resultado a PanelResponseDTO
-     * 6. Retorna 200 OK con panel actualizado
-     * 
-     * Códigos HTTP:
-     * - 200 OK: Estado actualizado exitosamente
-     * - 400 Bad Request: Panel no existe o estado inválido
-     * - 401 Unauthorized: Usuario no es propietario del panel
-     * - 404 Not Found: Panel no encontrado
-     * 
-     * @param panelId id del panel a actualizar
-     * @param nuevoEstado nuevo estado del panel
-     * @param authHeader token JWT en Authorization header
-     * @param userIdHeader propietarioId del usuario autenticado (header X-User-Id) como fallback
-     * @return Panel actualizado
-     */
-    @PutMapping("/{id}/estado")
-    public ResponseEntity<PanelResponseDTO> actualizarEstado(
+    @PutMapping("/{id}")
+    public ResponseEntity<PanelResponseDTO> actualizarPanel(
             @PathVariable("id") String panelId,
-            @RequestBody EstadoPanel nuevoEstado,
+            @Valid @RequestBody ActualizarPanelRequestDTO request,
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestHeader(value = "X-User-Id", required = false) String userIdHeader) {
         
         try {
             String propietarioId = extraerPropietarioId(authHeader, userIdHeader);
-            
-            // Llamar a versión de actualizarEstado que recibe propietarioId
-            Panel panelActualizado = panelService.actualizarEstado(panelId, nuevoEstado, propietarioId);
+
+            Panel panelActualizado = panelService.actualizarPanel(
+                    panelId, request.getNombre(), request.getColor(),
+                    request.getFechaInicio(), request.getFechaFin(),
+                    request.getPrioridad(), request.getEstado(), propietarioId);
             
             PanelResponseDTO response = PanelMapper.toPanelResponseDTO(panelActualizado);
             return ResponseEntity.ok(response);
@@ -209,8 +190,24 @@ public class PanelController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             
         } catch (IllegalArgumentException ex) {
-            logger.warning("Panel no encontrado: " + ex.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            logger.warning("Error al actualizar panel: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarPanel(
+            @PathVariable("id") String panelId,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader) {
+        try {
+            String propietarioId = extraerPropietarioId(authHeader, userIdHeader);
+            panelService.eliminarPanel(panelId, propietarioId);
+            return ResponseEntity.noContent().build();
+        } catch (UnauthorizedException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.notFound().build();
         }
     }
 
