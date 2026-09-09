@@ -1,0 +1,14 @@
+# Java y Maven
+target/
+*.class
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
+
+# Variables de entorno locales
+.env
