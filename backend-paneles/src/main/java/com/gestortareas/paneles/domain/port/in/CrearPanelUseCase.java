@@ -1,6 +1,6 @@
 package com.gestortareas.paneles.domain.port.in;
 
-import rmi.shared.Panel;
+import com.gestortareas.paneles.domain.model.Panel;
 
 import java.time.LocalDate;
 

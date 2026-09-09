@@ -1,7 +1,7 @@
 package com.gestortareas.paneles.application.service;
 
-import rmi.shared.Panel;
-import rmi.shared.EstadoPanel;
+import com.gestortareas.paneles.domain.model.EstadoPanel;
+import com.gestortareas.paneles.domain.model.Panel;
 
 import com.gestortareas.paneles.application.exception.UnauthorizedException;
 import com.gestortareas.paneles.application.exception.ValidationException;

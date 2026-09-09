@@ -1,6 +1,6 @@
 package com.gestortareas.paneles.infrastructure.adapter.in.rest;
 
-import rmi.shared.Panel;
+import com.gestortareas.paneles.domain.model.Panel;
 
 import com.gestortareas.paneles.application.exception.UnauthorizedException;
 import com.gestortareas.paneles.application.exception.ValidationException;

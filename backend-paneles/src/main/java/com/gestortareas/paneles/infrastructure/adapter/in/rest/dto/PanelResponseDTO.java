@@ -1,6 +1,6 @@
 package com.gestortareas.paneles.infrastructure.adapter.in.rest.dto;
 
-import rmi.shared.EstadoPanel;
+import com.gestortareas.paneles.domain.model.EstadoPanel;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
