@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 public class AuthRmiClientAdapter implements AuthServicePort {
 
     private static final Logger logger = Logger.getLogger(AuthRmiClientAdapter.class.getName());
-    private static final String SERVICE_NAME = "LoginService";
+    private static final String SERVICE_NAME = "AuthService";
     
     private final RmiConfig rmiConfig;
     private AuthRmiPort authRemoteService;
