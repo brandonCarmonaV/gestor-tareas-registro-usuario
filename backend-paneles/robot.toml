@@ -1,0 +1,2 @@
+paths = ["robot"]
+output-dir = "results"
