@@ -21,7 +21,6 @@ spring:
     init:
       mode: always
 
-rmi:
-  registry-port: 1100
-  auth-host: localhost
-  auth-port: 1099
+auth:
+  host: "http://localhost:"
+  port: 8090
