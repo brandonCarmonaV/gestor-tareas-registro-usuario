@@ -14,6 +14,7 @@ public class Panel {
     private Integer prioridad;
     private String propietarioId;
     private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaCompletado;
 
     private Panel(String id, String nombre, String color, EstadoPanel estado,
                   LocalDate fechaInicio, LocalDate fechaFin, Integer prioridad,
@@ -27,6 +28,7 @@ public class Panel {
         this.prioridad = prioridad;
         this.propietarioId = propietarioId;
         this.fechaCreacion = fechaCreacion;
+        this.fechaCompletado = null;
     }
 
     public static Panel crear(String nombre, String color, Integer prioridad,
@@ -67,6 +69,12 @@ public class Panel {
     public void cambiarEstado(EstadoPanel nuevoEstado) {
         if (nuevoEstado != null && !this.estado.equals(nuevoEstado)) {
             this.estado = nuevoEstado;
+
+            if (nuevoEstado == EstadoPanel.COMPLETADO) {
+                this.fechaCompletado = LocalDateTime.now();
+            } else {
+                this.fechaCompletado = null;
+            }
         }
     }
 
@@ -93,4 +101,5 @@ public class Panel {
     public Integer getPrioridad() { return prioridad; }
     public String getPropietarioId() { return propietarioId; }
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+    public LocalDateTime getFechaCompletado() { return fechaCompletado; }
 }
