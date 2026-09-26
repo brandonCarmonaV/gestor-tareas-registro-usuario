@@ -7,6 +7,8 @@ import com.gestortareas.paneles.domain.model.Panel;
 import com.gestortareas.paneles.domain.port.in.CrearPanelUseCase;
 import com.gestortareas.paneles.domain.port.in.ListarPanelesUseCase;
 import com.gestortareas.paneles.domain.port.out.PanelRepositoryPort;
+import com.gestortareas.paneles.infrastructure.adapter.out.webhook.ReporteWebhookClientAdapter;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,9 +21,11 @@ public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase {
     private static final Logger logger = Logger.getLogger(PanelService.class.getName());
     
     private final PanelRepositoryPort panelRepository;
+    private final ReporteWebhookClientAdapter webhookClient;
 
-    public PanelService(PanelRepositoryPort panelRepository) {
+    public PanelService(PanelRepositoryPort panelRepository, ReporteWebhookClientAdapter webhookClient) {
         this.panelRepository = panelRepository;
+        this.webhookClient = webhookClient;
     }
 
     @Override
@@ -66,7 +70,9 @@ public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase {
         }
         try {
             panel.actualizarDatos(nombre, color, fechaInicio, fechaFin, prioridad, estado);
-            return panelRepository.actualizar(panel);
+            Panel panelActualizado = panelRepository.actualizar(panel);
+            webhookClient.notificarCambioPanel(panelActualizado);
+            return panelActualizado;
         } catch (IllegalArgumentException ex) {
             throw new ValidationException("Error de validación al actualizar panel: " + ex.getMessage(), ex);
         }
