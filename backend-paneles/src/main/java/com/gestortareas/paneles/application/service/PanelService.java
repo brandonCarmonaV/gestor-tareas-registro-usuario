@@ -7,6 +7,8 @@ import com.gestortareas.paneles.domain.model.Panel;
 import com.gestortareas.paneles.domain.port.in.CrearPanelUseCase;
 import com.gestortareas.paneles.domain.port.in.ListarPanelesUseCase;
 import com.gestortareas.paneles.domain.port.out.PanelRepositoryPort;
+import com.gestortareas.paneles.infrastructure.adapter.out.webhook.ReporteWebhookClientAdapter;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,18 +21,22 @@ public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase {
     private static final Logger logger = Logger.getLogger(PanelService.class.getName());
     
     private final PanelRepositoryPort panelRepository;
+    private final ReporteWebhookClientAdapter webhookClient;
 
-    public PanelService(PanelRepositoryPort panelRepository) {
+    public PanelService(PanelRepositoryPort panelRepository, ReporteWebhookClientAdapter webhookClient) {
         this.panelRepository = panelRepository;
+        this.webhookClient = webhookClient;
     }
 
     @Override
-    public Panel crearPanel(String nombre, String color, Integer prioridad,
+    public Panel crearPanel(String nombre, String color, EstadoPanel estado, Integer prioridad,
                             LocalDate fechaInicio, LocalDate fechaFin, String propietarioId) {
         
         try {
-            Panel panel = Panel.crear(nombre, color, prioridad, fechaInicio, fechaFin, propietarioId);
+            Panel panel = Panel.crear(nombre, color, estado, prioridad, fechaInicio, fechaFin, propietarioId);
             Panel panelGuardado = panelRepository.guardar(panel);
+
+            webhookClient.notificarCambioPanel(panelGuardado);
             
             logger.info("Panel creado exitosamente: " + panelGuardado.getId() + 
                        " por propietario: " + propietarioId);
@@ -66,7 +72,9 @@ public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase {
         }
         try {
             panel.actualizarDatos(nombre, color, fechaInicio, fechaFin, prioridad, estado);
-            return panelRepository.actualizar(panel);
+            Panel panelActualizado = panelRepository.actualizar(panel);
+            webhookClient.notificarCambioPanel(panelActualizado);
+            return panelActualizado;
         } catch (IllegalArgumentException ex) {
             throw new ValidationException("Error de validación al actualizar panel: " + ex.getMessage(), ex);
         }
@@ -81,6 +89,7 @@ public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase {
         }
 
         panelRepository.eliminar(panelId);
+        webhookClient.notificarEliminacionPanel(panel);
     }
 
 }

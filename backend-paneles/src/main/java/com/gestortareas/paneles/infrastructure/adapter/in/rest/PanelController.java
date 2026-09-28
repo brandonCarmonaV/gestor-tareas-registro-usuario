@@ -56,6 +56,7 @@ public class PanelController {
             Panel panelCreado = panelService.crearPanel(
                     request.getNombre(),
                     request.getColor(),
+                    request.getEstado(),
                     request.getPrioridad(),
                     request.getFechaInicio(),
                     request.getFechaFin(),

@@ -113,7 +113,8 @@ public class PanelRepositoryAdapter implements PanelRepositoryPort {
                 panel.getFechaFin(),
                 panel.getPrioridad(),
                 panel.getPropietarioId(),
-                panel.getFechaCreacion()
+                panel.getFechaCreacion(),
+                panel.getFechaCompletado()
         );
     }
 
