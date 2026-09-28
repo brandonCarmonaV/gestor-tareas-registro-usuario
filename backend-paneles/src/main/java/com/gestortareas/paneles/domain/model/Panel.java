@@ -28,18 +28,22 @@ public class Panel {
         this.prioridad = prioridad;
         this.propietarioId = propietarioId;
         this.fechaCreacion = fechaCreacion;
-        this.fechaCompletado = null;
+        this.fechaCompletado = this.verificarCompletado(estado) ;
     }
 
-    public static Panel crear(String nombre, String color, Integer prioridad,
+    public static Panel crear(String nombre, String color, EstadoPanel estado, Integer prioridad,
                               LocalDate fechaInicio, LocalDate fechaFin,
                               String propietarioId) {
         validarNombre(nombre);
         validarFechas(fechaInicio, fechaFin);
 
-        return new Panel(UUID.randomUUID().toString(), nombre.trim(), color,
-                EstadoPanel.PENDIENTE, fechaInicio, fechaFin, prioridad,
+        Panel panel = new Panel(UUID.randomUUID().toString(), nombre.trim(), color,
+                estado, fechaInicio, fechaFin, prioridad,
                 propietarioId, LocalDateTime.now());
+        
+        panel.verificarCompletado(estado);
+
+        return panel;
     }
 
     public static Panel reconstituit(String id, String nombre, String color,
@@ -61,9 +65,7 @@ public class Panel {
         this.fechaInicio = nuevaFechaInicio;
         this.fechaFin = nuevaFechaFin;
         this.prioridad = nuevaPrioridad;
-        if (nuevoEstado != null) {
-            this.estado = nuevoEstado;
-        }
+        cambiarEstado(nuevoEstado);
     }
 
     public void cambiarEstado(EstadoPanel nuevoEstado) {
@@ -78,12 +80,21 @@ public class Panel {
         }
     }
 
+    private LocalDateTime verificarCompletado(EstadoPanel estado) {
+        if (estado == EstadoPanel.COMPLETADO) {
+                return LocalDateTime.now();
+            } else {
+                return null;
+            }
+        }
+
     private static void validarNombre(String nombre) {
         if (nombre == null || nombre.trim().isEmpty()) {
             throw new IllegalArgumentException(
                     "El nombre del panel es obligatorio y no puede estar vacío");
         }
     }
+    
 
     private static void validarFechas(LocalDate fechaInicio, LocalDate fechaFin) {
         if (fechaInicio != null && fechaFin != null && fechaFin.isBefore(fechaInicio)) {
@@ -91,6 +102,7 @@ public class Panel {
                     "La fecha de fin no puede ser anterior a la fecha de inicio");
         }
     }
+
 
     public String getId() { return id; }
     public String getNombre() { return nombre; }

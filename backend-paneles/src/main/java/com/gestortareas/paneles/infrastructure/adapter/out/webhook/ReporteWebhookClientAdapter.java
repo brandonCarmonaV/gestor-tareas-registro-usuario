@@ -42,6 +42,24 @@ public class ReporteWebhookClientAdapter {
         }
     }
 
+    public void notificarEliminacionPanel(Panel panel) {
+        try {
+            WebhookComandoPayloadEliminar payload = new WebhookComandoPayloadEliminar(
+                    panel.getId()
+            );
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<WebhookComandoPayloadEliminar> request = new HttpEntity<>(payload, headers);
+            
+            restTemplate.postForEntity(urlReportes + "/eliminacion", request, Void.class);
+            
+        } catch (Exception e) {
+            System.err.println("No se pudo enviar el webhook de eliminación al microservicio de reportes: " + e.getMessage());
+        }
+    }
+
     private record WebhookComandoPayload(
             String panelIdOriginal,
             String propietarioId,
@@ -50,4 +68,8 @@ public class ReporteWebhookClientAdapter {
             LocalDate fechaFin,
             LocalDateTime fechaCompletado
     ) {}
+
+    private record WebhookComandoPayloadEliminar(
+        String panelIdOriginal
+    ){}
 }

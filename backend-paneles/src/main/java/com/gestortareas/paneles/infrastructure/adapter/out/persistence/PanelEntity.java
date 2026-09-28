@@ -15,41 +15,47 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "paneles")
 public class PanelEntity {
+
     @Id
     @Column(name = "id", length = 36, nullable = false)
     private String id;
-    
+
     @Column(name = "nombre", nullable = false, length = 255)
     private String nombre;
-    
+
     @Column(name = "color", length = 50)
     private String color;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 20)
     private EstadoPanel estado;
-    
+
     @Column(name = "fecha_inicio")
     private LocalDate fechaInicio;
-    
+
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
-    
+
     @Column(name = "prioridad")
     private Integer prioridad;
-    
+
     @Column(name = "propietario_id", nullable = false, length = 255)
     private String propietarioId;
-    
+
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
+
+    @Column(name = "fecha_completado")
+    private LocalDateTime fechaCompletado;
 
     public PanelEntity() {
     }
 
     public PanelEntity(String id, String nombre, String color, EstadoPanel estado,
                        LocalDate fechaInicio, LocalDate fechaFin, Integer prioridad,
-                       String propietarioId, LocalDateTime fechaCreacion) {
+                       String propietarioId, LocalDateTime fechaCreacion,
+                       LocalDateTime fechaCompletado) {
+
         this.id = id;
         this.nombre = nombre;
         this.color = color;
@@ -59,6 +65,7 @@ public class PanelEntity {
         this.prioridad = prioridad;
         this.propietarioId = propietarioId;
         this.fechaCreacion = fechaCreacion;
+        this.fechaCompletado = fechaCompletado;
     }
 
     public String getId() {
@@ -133,6 +140,14 @@ public class PanelEntity {
         this.fechaCreacion = fechaCreacion;
     }
 
+    public LocalDateTime getFechaCompletado() {
+        return fechaCompletado;
+    }
+
+    public void setFechaCompletado(LocalDateTime fechaCompletado) {
+        this.fechaCompletado = fechaCompletado;
+    }
+
     @Override
     public String toString() {
         return "PanelEntity{" +
@@ -141,6 +156,7 @@ public class PanelEntity {
                 ", estado=" + estado +
                 ", propietarioId='" + propietarioId + '\'' +
                 ", fechaCreacion=" + fechaCreacion +
+                ", fechaCompletado=" + fechaCompletado +
                 '}';
     }
 }

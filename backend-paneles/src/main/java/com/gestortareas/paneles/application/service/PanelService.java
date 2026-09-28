@@ -29,12 +29,14 @@ public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase {
     }
 
     @Override
-    public Panel crearPanel(String nombre, String color, Integer prioridad,
+    public Panel crearPanel(String nombre, String color, EstadoPanel estado, Integer prioridad,
                             LocalDate fechaInicio, LocalDate fechaFin, String propietarioId) {
         
         try {
-            Panel panel = Panel.crear(nombre, color, prioridad, fechaInicio, fechaFin, propietarioId);
+            Panel panel = Panel.crear(nombre, color, estado, prioridad, fechaInicio, fechaFin, propietarioId);
             Panel panelGuardado = panelRepository.guardar(panel);
+
+            webhookClient.notificarCambioPanel(panelGuardado);
             
             logger.info("Panel creado exitosamente: " + panelGuardado.getId() + 
                        " por propietario: " + propietarioId);
@@ -87,6 +89,7 @@ public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase {
         }
 
         panelRepository.eliminar(panelId);
+        webhookClient.notificarEliminacionPanel(panel);
     }
 
 }
