@@ -1,8 +1,10 @@
-package com.gestortareas.paneles.application.exception;
+package com.gestortareas.paneles.domain.exception;
 
 public class ValidationException extends RuntimeException {
     
-    public ValidationException(String mensaje) {
+	private static final long serialVersionUID = 1L;
+
+	public ValidationException(String mensaje) {
         super(mensaje);
     }
 

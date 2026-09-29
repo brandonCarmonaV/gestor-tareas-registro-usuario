@@ -1,8 +1,10 @@
-package com.gestortareas.paneles.application.exception;
+package com.gestortareas.paneles.domain.exception;
 
 public class UnauthorizedException extends RuntimeException {
     
-    public UnauthorizedException(String mensaje) {
+	private static final long serialVersionUID = 1L;
+
+	public UnauthorizedException(String mensaje) {
         super(mensaje);
     }
 

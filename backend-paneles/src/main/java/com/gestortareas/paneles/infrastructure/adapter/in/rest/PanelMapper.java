@@ -1,7 +1,7 @@
 package com.gestortareas.paneles.infrastructure.adapter.in.rest;
 
+import com.gestortareas.paneles.domain.model.entity.Panel;
 import com.gestortareas.paneles.infrastructure.adapter.in.rest.dto.PanelResponseDTO;
-import com.gestortareas.paneles.domain.model.Panel;
 
 public class PanelMapper {
     public static PanelResponseDTO toPanelResponseDTO(Panel panel) {

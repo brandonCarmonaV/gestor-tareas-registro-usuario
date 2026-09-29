@@ -1,6 +1,6 @@
 package com.gestortareas.paneles.infrastructure.adapter.in.rest.dto;
 
-import com.gestortareas.paneles.domain.model.EstadoPanel;
+import com.gestortareas.paneles.domain.model.EstadoPanelEnum;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ public class PanelResponseDTO {
     private String id;
     private String nombre;
     private String color;
-    private EstadoPanel estado;
+    private EstadoPanelEnum estado;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private Integer prioridad;
@@ -19,7 +19,7 @@ public class PanelResponseDTO {
     public PanelResponseDTO() {
     }
 
-    public PanelResponseDTO(String id, String nombre, String color, EstadoPanel estado,
+    public PanelResponseDTO(String id, String nombre, String color, EstadoPanelEnum estado,
                            LocalDate fechaInicio, LocalDate fechaFin, Integer prioridad,
                            String propietarioId, LocalDateTime fechaCreacion) {
         this.id = id;
@@ -57,11 +57,11 @@ public class PanelResponseDTO {
         this.color = color;
     }
 
-    public EstadoPanel getEstado() {
+    public EstadoPanelEnum getEstado() {
         return estado;
     }
 
-    public void setEstado(EstadoPanel estado) {
+    public void setEstado(EstadoPanelEnum estado) {
         this.estado = estado;
     }
 

@@ -1,29 +1,34 @@
 package com.gestortareas.paneles.infrastructure.adapter.out.auth;
 
 import com.gestortareas.paneles.domain.port.out.AuthServicePort;
-import com.gestortareas.paneles.infrastructure.config.RmiConfig;
-import rmi.shared.AuthRmiPort;
-import org.springframework.stereotype.Component;
 
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
 @Component
 public class AuthRmiClientAdapter implements AuthServicePort {
 
-    private static final Logger logger = Logger.getLogger(AuthRmiClientAdapter.class.getName());
-    private static final String SERVICE_NAME = "AuthService";
-    
-    private final RmiConfig rmiConfig;
-    private AuthRmiPort authRemoteService;
-    private boolean initialized = false;
+    @Value("${auth.host}")
+    private String authHost;
 
-    public AuthRmiClientAdapter(RmiConfig rmiConfig) {
-        this.rmiConfig = rmiConfig;
+    @Value("${auth.port}")
+    private String authPort;
+
+    private static final Logger logger = Logger.getLogger(AuthRmiClientAdapter.class.getName());
+
+    private final RestTemplate restTemplate;
+
+    public AuthRmiClientAdapter(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -35,10 +40,17 @@ public class AuthRmiClientAdapter implements AuthServicePort {
 
             logger.info("Validando token contra backend de Auth remoto...");
 
-            AuthRmiPort authService = obtenerAuthRemoteService();
+            Map<String, String> params = new HashMap<>();
+            params.put("token", token);
 
-            Map<String, String> subjectData = authService.extractSubject(token);
-            String userId = extraerUserId(subjectData);
+            ResponseEntity<Map<String, String>> response = restTemplate.exchange(
+                    authHost + authPort + "/extract?token=" + token,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<Map<String, String>>() {
+                    });
+
+            String userId = response.getBody().get("id");
 
             if (userId == null || userId.trim().isEmpty()) {
                 logger.warning("Backend de Auth retornó userId inválido");
@@ -51,71 +63,13 @@ public class AuthRmiClientAdapter implements AuthServicePort {
         } catch (IllegalArgumentException ex) {
             logger.warning("Validación fallida: " + ex.getMessage());
             throw new RuntimeException("Error de validación: " + ex.getMessage(), ex);
-        } catch (RemoteException ex) {
-            logger.severe("Error en comunicación RMI con backend de Auth: " + ex.getMessage());
+        } catch (RestClientException ex) {
+            logger.severe("Error en comunicación con backend de Auth: " + ex.getMessage());
             throw new RuntimeException(
-                "No se pudo comunicar con el backend de autenticación remoto. " +
-                "Verifica que el servicio esté disponible en " +
-                rmiConfig.authHost() + ":" + rmiConfig.authPort(),
-                ex
-            );
+                    "No se pudo comunicar con el backend de autenticación remoto. " +
+                            "Verifica que el servicio esté disponible en " +
+                            authHost + authPort,
+                    ex);
         }
-    }
-
-    private AuthRmiPort obtenerAuthRemoteService() throws RemoteException {
-        if (initialized && authRemoteService != null) {
-            try {
-                return authRemoteService;
-            } catch (Exception ex) {
-                logger.warning("Conexión al servicio remoto de Auth se perdió, reconectando...");
-                initialized = false;
-                authRemoteService = null;
-            }
-        }
-
-        try {
-            String rmiUrl = "rmi://" + rmiConfig.authHost() + ":" + rmiConfig.authPort() + 
-                           "/" + SERVICE_NAME;
-            
-            logger.info("Conectando al backend de Auth remoto: " + rmiUrl);
-
-            Registry registry = LocateRegistry.getRegistry(rmiConfig.authHost(), rmiConfig.authPort());
-            authRemoteService = (AuthRmiPort) registry.lookup(SERVICE_NAME);
-
-            initialized = true;
-            
-            logger.info("✓ Conectado exitosamente al backend de Auth remoto");
-            return authRemoteService;
-
-        } catch (NotBoundException ex) {
-            logger.severe("Servicio '" + SERVICE_NAME + 
-                         "' no está registrado en el backend de Auth. " +
-                         "Verifica que AuthServiceImpl esté corriendo en " +
-                         rmiConfig.authHost() + ":" + rmiConfig.authPort());
-            throw new RemoteException(
-                "Servicio de Auth no encontrado en registry remoto: " + ex.getMessage(),
-                ex
-            );
-        } catch (RemoteException ex) {
-            logger.severe("Error al conectar con registry remoto de Auth en " +
-                         rmiConfig.authHost() + ":" + rmiConfig.authPort() + 
-                         " - " + ex.getMessage());
-            throw ex;
-        }
-    }
-
-    private String extraerUserId(Map<String, String> subjectData) {
-        if (subjectData == null || subjectData.isEmpty()) {
-            return null;
-        }
-
-        for (String key : new String[] {"userId", "user_id", "subject", "sub", "id"}) {
-            String value = subjectData.get(key);
-            if (value != null && !value.trim().isEmpty()) {
-                return value.trim();
-            }
-        }
-
-        return null;
     }
 }
