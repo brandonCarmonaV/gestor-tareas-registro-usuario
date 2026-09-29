@@ -1,6 +1,11 @@
 # Java y Maven
 target/
 *.class
+.classpath
+.factorypath
+.project
+.settings/
+
 
 # IDE
 .idea/

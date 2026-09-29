@@ -3,7 +3,8 @@ package com.gestortareas.paneles.infrastructure.adapter.in.rmi;
 import com.gestortareas.paneles.application.exception.UnauthorizedException;
 import com.gestortareas.paneles.application.exception.ValidationException;
 import com.gestortareas.paneles.application.service.PanelService;
-import com.gestortareas.paneles.domain.model.Panel;
+import com.gestortareas.paneles.domain.model.entity.Panel;
+
 import rmi.shared.PanelRemoteService;
 import rmi.shared.RmiPanelData;
 
