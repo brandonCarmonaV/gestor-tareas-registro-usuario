@@ -16,13 +16,12 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gestortareas.paneles.application.exception.UnauthorizedException;
-import com.gestortareas.paneles.application.exception.ValidationException;
 import com.gestortareas.paneles.application.models.dto.PanelRequestDTO;
 import com.gestortareas.paneles.application.service.PanelService;
+import com.gestortareas.paneles.domain.exception.UnauthorizedException;
+import com.gestortareas.paneles.domain.exception.ValidationException;
 import com.gestortareas.paneles.domain.model.entity.Panel;
 import com.gestortareas.paneles.domain.port.out.AuthServicePort;
-import com.gestortareas.paneles.infrastructure.adapter.in.rest.dto.ActualizarPanelRequestDTO;
 import com.gestortareas.paneles.infrastructure.adapter.in.rest.dto.PanelResponseDTO;
 
 import jakarta.validation.Valid;
@@ -47,9 +46,7 @@ public class PanelController {
         
         try {
             String propietarioId = extraerPropietarioId(userIdHeader, cookieToken);
-            
             Panel panelCreado = panelService.crearPanel(request, propietarioId);
-            
             PanelResponseDTO response = PanelMapper.toPanelResponseDTO(panelCreado);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
             
@@ -90,17 +87,14 @@ public class PanelController {
     @PutMapping("/{id}")
     public ResponseEntity<PanelResponseDTO> actualizarPanel(
             @PathVariable("id") String panelId,
-            @Valid @RequestBody ActualizarPanelRequestDTO request,
+            @Valid @RequestBody PanelRequestDTO request,
             @RequestHeader(value = "X-User-Id", required = false) String userIdHeader,
             @CookieValue(value = "access_token", required = false) String cookieToken) {
         
         try {
             String propietarioId = extraerPropietarioId(userIdHeader, cookieToken);
 
-            Panel panelActualizado = panelService.actualizarPanel(
-                    panelId, request.getNombre(), request.getColor(),
-                    request.getFechaInicio(), request.getFechaFin(),
-                    request.getPrioridad(), request.getEstado(), propietarioId, request.getDescripcion());
+            Panel panelActualizado = panelService.actualizarPanel(request, propietarioId);
             
             PanelResponseDTO response = PanelMapper.toPanelResponseDTO(panelActualizado);
             return ResponseEntity.ok(response);

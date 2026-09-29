@@ -3,7 +3,7 @@ package com.gestortareas.paneles.domain.model.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.gestortareas.paneles.application.exception.UnauthorizedException;
+import com.gestortareas.paneles.domain.exception.UnauthorizedException;
 import com.gestortareas.paneles.domain.model.EstadoPanelEnum;
 
 public class Panel {
@@ -17,6 +17,7 @@ public class Panel {
 	private String propietarioId;
 	private LocalDateTime fechaCreacion;
 	private String descripcion;
+	private LocalDateTime fechaCompletado;
 
 	public Panel(String id, String nombre, String color, EstadoPanelEnum estado, LocalDate fechaInicio, LocalDate fechaFin,
 			Integer prioridad, String propietarioId, LocalDateTime fechaCreacion, String descripcion) {
@@ -36,31 +37,13 @@ public class Panel {
 		this.descripcion = descripcion;
 	}
 
-//    public static Panel crear(String nombre, String color, Integer prioridad,
-//                              LocalDate fechaInicio, LocalDate fechaFin,
-//                              String propietarioId) {
-//        validarNombre(nombre);
-//        validarFechas(fechaInicio, fechaFin);
-//
-//        return new Panel(UUID.randomUUID().toString(), nombre.trim(), color,
-//                EstadoPanel.PENDIENTE, fechaInicio, fechaFin, prioridad,
-//                propietarioId, LocalDateTime.now());
-//    }
-//
-//    public static Panel reconstituit(String id, String nombre, String color,
-//                                     EstadoPanel estado, LocalDate fechaInicio,
-//                                     LocalDate fechaFin, Integer prioridad,
-//                                     String propietarioId, LocalDateTime fechaCreacion) {
-//        return new Panel(id, nombre, color, estado, fechaInicio, fechaFin,
-//                prioridad, propietarioId, fechaCreacion);
-//    }
-
     public void actualizarDatos(String nuevoNombre, String nuevoColor,
                                 LocalDate nuevaFechaInicio, LocalDate nuevaFechaFin,
                                 Integer nuevaPrioridad, EstadoPanelEnum nuevoEstado, String idUsuarioEdita, String descripcion) {
         validarNombre(nuevoNombre);
         validarFechas(nuevaFechaInicio, nuevaFechaFin);
         validarUsuarioPanel(idUsuarioEdita);
+        cambiarEstado(nuevoEstado);
 
         this.descripcion = descripcion;
         this.nombre = nuevoNombre.trim();
@@ -68,13 +51,16 @@ public class Panel {
         this.fechaInicio = nuevaFechaInicio;
         this.fechaFin = nuevaFechaFin;
         this.prioridad = nuevaPrioridad;
-        if (nuevoEstado != null) {
-            this.estado = nuevoEstado;
-        }
+        
     }
 
-    public void cambiarEstado(EstadoPanelEnum nuevoEstado) {
+    private void definirFechaFinalizacion(EstadoPanelEnum nuevoEstado) {
+    	this.fechaCompletado = nuevoEstado == EstadoPanelEnum.COMPLETADO ? LocalDateTime.now() : null;
+    }
+    
+    private void cambiarEstado(EstadoPanelEnum nuevoEstado) {
         if (nuevoEstado != null && !this.estado.equals(nuevoEstado)) {
+        	definirFechaFinalizacion(nuevoEstado);
             this.estado = nuevoEstado;
         }
     }
@@ -140,6 +126,16 @@ public class Panel {
 	public void setDescripcion(String descripcion) {
 		this.descripcion = descripcion;
 	}
+
+	public LocalDateTime getFechaCompletado() {
+		return fechaCompletado;
+	}
+
+	public void setFechaCompletado(LocalDateTime fechaCompletado) {
+		this.fechaCompletado = fechaCompletado;
+	}
+	
+	
 	
 	
 }

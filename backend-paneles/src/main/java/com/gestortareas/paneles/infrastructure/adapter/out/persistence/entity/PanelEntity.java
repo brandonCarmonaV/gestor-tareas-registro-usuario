@@ -56,4 +56,7 @@ public class PanelEntity {
     
     @Column(name = "DESCRIPCION")
     private String descripcion;
+    
+    @Column(name = "fecha_completado")
+    private LocalDateTime fechaCompletado;
 }

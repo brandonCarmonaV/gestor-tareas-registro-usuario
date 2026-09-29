@@ -2,6 +2,8 @@ package com.gestortareas.paneles.application.models.dto;
 
 import java.time.LocalDate;
 
+import com.gestortareas.paneles.domain.model.EstadoPanelEnum;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,5 +26,7 @@ public class PanelRequestDTO {
     private LocalDate fechaFin;
     private Integer prioridad;
     private String descripcion;
+    private String panelId;
+    private EstadoPanelEnum estado;
 	
 }
