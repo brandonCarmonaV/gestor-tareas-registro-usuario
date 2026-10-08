@@ -21,7 +21,11 @@ spring:
     init:
       mode: always
 
-rmi:
-  registry-port: 1100
-  auth-host: localhost
-  auth-port: 1099
+auth:
+  host: "http://localhost:"
+  port: 8090
+
+# URL del microservicio de reportes para los webhooks
+services:
+  reportes:
+    url: ${REPORTES_URL:http://localhost:8083/api/webhooks/paneles/evento}

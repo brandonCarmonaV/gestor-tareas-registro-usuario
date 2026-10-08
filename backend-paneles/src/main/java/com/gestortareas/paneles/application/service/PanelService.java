@@ -1,86 +1,73 @@
 package com.gestortareas.paneles.application.service;
 
-import com.gestortareas.paneles.application.exception.UnauthorizedException;
-import com.gestortareas.paneles.application.exception.ValidationException;
-import com.gestortareas.paneles.domain.model.EstadoPanel;
-import com.gestortareas.paneles.domain.model.Panel;
-import com.gestortareas.paneles.domain.port.in.CrearPanelUseCase;
-import com.gestortareas.paneles.domain.port.in.ListarPanelesUseCase;
-import com.gestortareas.paneles.domain.port.out.PanelRepositoryPort;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.logging.Logger;
+import com.gestortareas.paneles.application.models.dto.PanelRequestDTO;
+import com.gestortareas.paneles.domain.exception.UnauthorizedException;
+import com.gestortareas.paneles.domain.exception.ValidationException;
+import com.gestortareas.paneles.domain.model.EstadoPanelEnum;
+import com.gestortareas.paneles.domain.model.entity.Panel;
+import com.gestortareas.paneles.domain.port.PanelRepository;
+import com.gestortareas.paneles.infrastructure.adapter.out.webhook.ReporteWebhookClientAdapter;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
-public class PanelService implements CrearPanelUseCase, ListarPanelesUseCase {
+@RequiredArgsConstructor
+@Slf4j
+public class PanelService {
 
-    private static final Logger logger = Logger.getLogger(PanelService.class.getName());
-    
-    private final PanelRepositoryPort panelRepository;
+	private final PanelRepository panelRepository;
+    private final ReporteWebhookClientAdapter webhookClient;
 
-    public PanelService(PanelRepositoryPort panelRepository) {
-        this.panelRepository = panelRepository;
-    }
+	public Panel crearPanel(PanelRequestDTO panelRequest, String propietarioId) {
 
-    @Override
-    public Panel crearPanel(String nombre, String color, Integer prioridad,
-                            LocalDate fechaInicio, LocalDate fechaFin, String propietarioId) {
-        
-        try {
-            Panel panel = Panel.crear(nombre, color, prioridad, fechaInicio, fechaFin, propietarioId);
-            Panel panelGuardado = panelRepository.guardar(panel);
-            
-            logger.info("Panel creado exitosamente: " + panelGuardado.getId() + 
-                       " por propietario: " + propietarioId);
-            return panelGuardado;
-            
-        } catch (IllegalArgumentException ex) {
-            logger.warning("Validación fallida al crear panel: " + ex.getMessage());
-            throw new ValidationException("Error de validación al crear panel: " + ex.getMessage(), ex);
-        }
-    }
+		try {
+			Panel panelNuevo = new Panel(null, panelRequest.getNombre(), panelRequest.getColor(),
+					EstadoPanelEnum.PENDIENTE, panelRequest.getFechaInicio(), panelRequest.getFechaFin(),
+					panelRequest.getPrioridad(), propietarioId, LocalDateTime.now(), panelRequest.getDescripcion());
 
-    @Override
-    public List<Panel> listarPaneles(String propietarioId) {
-        List<Panel> paneles = panelRepository.listarPorPropietario(propietarioId);
-        
-        logger.info("Listados " + paneles.size() + " paneles del propietario: " + propietarioId);
-        return paneles;
-    }
+			 webhookClient.notificarCambioPanel(panelNuevo);
+			
+			return panelRepository.crearPanel(panelNuevo);
 
-    public Panel actualizarPanel(String panelId, String nombre, String color,
-                                 LocalDate fechaInicio, LocalDate fechaFin,
-                                 Integer prioridad, EstadoPanel estado,
-                                 String propietarioId) {
-        Panel panel = panelRepository.buscarPorId(panelId)
-                .orElseThrow(() -> {
-                    logger.warning("Intento de actualizar panel inexistente: " + panelId);
-                    return new IllegalArgumentException("Panel no encontrado: " + panelId);
-                });
-        if (!panel.getPropietarioId().equals(propietarioId)) {
-            logger.severe("Intento de actualizar panel de otro usuario. Panel: " + panelId + 
-                         ", Propietario: " + panel.getPropietarioId() + ", Usuario: " + propietarioId);
-            throw new UnauthorizedException("No tienes permisos para actualizar este panel");
-        }
-        try {
-            panel.actualizarDatos(nombre, color, fechaInicio, fechaFin, prioridad, estado);
-            return panelRepository.actualizar(panel);
-        } catch (IllegalArgumentException ex) {
-            throw new ValidationException("Error de validación al actualizar panel: " + ex.getMessage(), ex);
-        }
-    }
+		} catch (IllegalArgumentException ex) {
+			log.warn("Validación fallida al crear panel: " + ex.getMessage());
+			throw new ValidationException("Error de validación al crear panel: " + ex.getMessage(), ex);
+		}
+	}
 
-    public void eliminarPanel(String panelId, String propietarioId) {
-        Panel panel = panelRepository.buscarPorId(panelId)
-                .orElseThrow(() -> new IllegalArgumentException("Panel no encontrado: " + panelId));
+	public List<Panel> listarPaneles(String propietarioId) {
+		List<Panel> paneles = panelRepository.listarPorPropietario(propietarioId);
+		return paneles;
+	}
 
-        if (!panel.getPropietarioId().equals(propietarioId)) {
-            throw new UnauthorizedException("No tienes permisos para eliminar este panel");
-        }
+	public Panel actualizarPanel(PanelRequestDTO panelRequest, String propietarioId) {
+		
+		Panel panel = panelRepository.buscarPorId(panelRequest.getPanelId()).orElseThrow(() -> {
+			return new IllegalArgumentException("Panel no encontrado: " + panelRequest.getPanelId());
+		});
 
-        panelRepository.eliminar(panelId);
-    }
+		panel.actualizarDatos(panelRequest.getNombre(), panelRequest.getColor(), panelRequest.getFechaInicio(), panelRequest.getFechaFin(),
+				panelRequest.getPrioridad(), panelRequest.getEstado(), propietarioId, panelRequest.getDescripcion());
+		webhookClient.notificarCambioPanel(panel);
+		return panelRepository.actualizar(panel);
 
+	}
+
+	public void eliminarPanel(String panelId, String propietarioId) {
+		Panel panel = panelRepository.buscarPorId(panelId)
+				.orElseThrow(() -> new IllegalArgumentException("Panel no encontrado: " + panelId));
+
+		if (!panel.getPropietarioId().equals(propietarioId)) {
+			throw new UnauthorizedException("No tienes permisos para eliminar este panel");
+		}
+
+		panelRepository.eliminar(panelId);
+		webhookClient.notificarEliminacionPanel(panel);
+	}
 }
