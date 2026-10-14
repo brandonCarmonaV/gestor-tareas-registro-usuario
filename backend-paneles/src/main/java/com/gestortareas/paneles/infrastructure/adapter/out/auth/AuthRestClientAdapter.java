@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 @Component
-public class AuthRmiClientAdapter implements AuthServicePort {
+public class AuthRestClientAdapter implements AuthServicePort {
 
     @Value("${auth.host}")
     private String authHost;
@@ -23,11 +23,11 @@ public class AuthRmiClientAdapter implements AuthServicePort {
     @Value("${auth.port}")
     private String authPort;
 
-    private static final Logger logger = Logger.getLogger(AuthRmiClientAdapter.class.getName());
+    private static final Logger logger = Logger.getLogger(AuthRestClientAdapter.class.getName());
 
     private final RestTemplate restTemplate;
 
-    public AuthRmiClientAdapter(RestTemplate restTemplate) {
+    public AuthRestClientAdapter(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
