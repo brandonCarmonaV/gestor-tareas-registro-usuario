@@ -2,6 +2,7 @@ package com.gestortareas.paneles.infrastructure.adapter.out.webhook;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -15,6 +16,7 @@ import com.gestortareas.paneles.domain.model.entity.Panel;
 @Component
 public class ReporteWebhookClientAdapter {
 
+    private static final Logger logger = Logger.getLogger(ReporteWebhookClientAdapter.class.getName());
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${services.reportes.url}")
@@ -36,6 +38,7 @@ public class ReporteWebhookClientAdapter {
 
             HttpEntity<WebhookComandoPayload> request = new HttpEntity<>(payload, headers);
             
+            logger.info("reportes url: " + urlReportes);
             restTemplate.postForEntity(urlReportes, request, Void.class);
             
         } catch (Exception e) {

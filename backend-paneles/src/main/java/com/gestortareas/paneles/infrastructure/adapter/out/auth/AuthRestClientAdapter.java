@@ -43,6 +43,7 @@ public class AuthRestClientAdapter implements AuthServicePort {
             Map<String, String> params = new HashMap<>();
             params.put("token", token);
 
+            logger.info("auth url: " + authHost + authPort);
             ResponseEntity<Map<String, String>> response = restTemplate.exchange(
                     authHost + authPort + "/extract?token=" + token,
                     HttpMethod.GET,
