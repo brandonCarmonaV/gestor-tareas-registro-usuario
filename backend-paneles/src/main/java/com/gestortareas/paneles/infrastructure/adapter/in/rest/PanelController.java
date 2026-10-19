@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,16 +35,14 @@ public class PanelController {
 
     private final PanelService panelService;
     private final AuthServicePort authService;
-    private final boolean allowTestUserHeader;
 
     @PostMapping
     public ResponseEntity<PanelResponseDTO> crearPanel(
             @Valid @RequestBody PanelRequestDTO request,
-            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader,
             @CookieValue(value = "access_token", required = false) String cookieToken) {
         
         try {
-            String propietarioId = extraerPropietarioId(userIdHeader, cookieToken);
+            String propietarioId = extraerPropietarioId(cookieToken);
             Panel panelCreado = panelService.crearPanel(request, propietarioId);
             PanelResponseDTO response = PanelMapper.toPanelResponseDTO(panelCreado);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -61,11 +58,10 @@ public class PanelController {
 
     @GetMapping
     public ResponseEntity<List<PanelResponseDTO>> listarPaneles(
-            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader,
             @CookieValue(value = "access_token", required = false) String cookieToken) {
         
         try {
-            String propietarioId = extraerPropietarioId(userIdHeader, cookieToken);
+            String propietarioId = extraerPropietarioId(cookieToken);
             
             List<Panel> paneles = panelService.listarPaneles(propietarioId);
             
@@ -88,11 +84,10 @@ public class PanelController {
     public ResponseEntity<PanelResponseDTO> actualizarPanel(
             @PathVariable("id") String panelId,
             @Valid @RequestBody PanelRequestDTO request,
-            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader,
             @CookieValue(value = "access_token", required = false) String cookieToken) {
         
         try {
-            String propietarioId = extraerPropietarioId(userIdHeader, cookieToken);
+            String propietarioId = extraerPropietarioId(cookieToken);
 
             Panel panelActualizado = panelService.actualizarPanel(request, propietarioId);
             
@@ -111,10 +106,9 @@ public class PanelController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarPanel(
             @PathVariable("id") String panelId,
-            @RequestHeader(value = "X-User-Id", required = false) String userIdHeader,
             @CookieValue(value = "access_token", required = false) String cookieToken) {
         try {
-            String propietarioId = extraerPropietarioId(userIdHeader, cookieToken);
+            String propietarioId = extraerPropietarioId(cookieToken);
             panelService.eliminarPanel(panelId, propietarioId);
             return ResponseEntity.noContent().build();
         } catch (UnauthorizedException ex) {
@@ -124,9 +118,7 @@ public class PanelController {
         }
     }
 
-    // Extracción limpia basada exclusivamente en Cookies y Fallback de desarrollo
-    private String extraerPropietarioId(String userIdHeader, String cookieToken) {
-        // 1. Validar la cookie HttpOnly enviada automáticamente por el navegador
+    private String extraerPropietarioId(String cookieToken) {
         if (cookieToken != null && !cookieToken.trim().isEmpty()) {
             try {
             	log.info("Validando token JWT obtenido desde la Cookie 'access_token'...");
@@ -135,13 +127,7 @@ public class PanelController {
                 throw new UnauthorizedException("Token en cookie inválido o expirado", ex);
             }
         }
-        
-        // 2. Fallback de desarrollo (X-User-Id) para pruebas manuales rápidas
-        if (allowTestUserHeader && userIdHeader != null && !userIdHeader.trim().isEmpty()) {
-        	log.info("Usando fallback X-User-Id (development mode)");
-            return userIdHeader.trim();
-        }
-        
-        throw new UnauthorizedException("Usuario no autenticado (falta cookie 'access_token' o header de prueba)");
+
+        throw new UnauthorizedException("Usuario no autenticado (falta cookie 'access_token')");
     }
 }

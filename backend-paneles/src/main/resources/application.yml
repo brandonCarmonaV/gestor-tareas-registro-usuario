@@ -1,10 +1,6 @@
 server:
   port: 8081
 
-app:
-  auth:
-    allow-test-user-header: false
-
 spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://db.mvtdklxcdxfgrwqhbdwz.supabase.co:5432/postgres}
@@ -22,10 +18,10 @@ spring:
       mode: always
 
 auth:
-  host: "http://localhost:"
-  port: 8090
+  host: "http://${AUTH_BACK_HOST:localhost}:"
+  port: ${AUTH_BACK_PORT:8090}
 
 # URL del microservicio de reportes para los webhooks
 services:
   reportes:
-    url: ${REPORTES_URL:http://localhost:8083/api/webhooks/paneles/evento}
+    url: ${REPORTES_URL:http://${REPORT_BACK_HOST:localhost}:${REPORT_BACK_PORT:8083}/api/webhooks/paneles/evento}
