@@ -16,4 +16,5 @@ public class TableroResponseDTO {
     private String nombre;
     private String propietarioId;
     private LocalDateTime fechaCreacion;
+    private boolean esPropietario;
 }
