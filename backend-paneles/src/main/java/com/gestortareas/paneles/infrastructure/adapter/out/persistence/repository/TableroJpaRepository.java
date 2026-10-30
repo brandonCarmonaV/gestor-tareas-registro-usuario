@@ -9,5 +9,6 @@ import java.util.List;
 public interface TableroJpaRepository extends JpaRepository<TableroEntity, String> {
 
     List<TableroEntity> findByPropietarioId(String propietarioId);
+    List<TableroEntity> findByMiembrosIdsContaining(String usuarioId);
 
 }

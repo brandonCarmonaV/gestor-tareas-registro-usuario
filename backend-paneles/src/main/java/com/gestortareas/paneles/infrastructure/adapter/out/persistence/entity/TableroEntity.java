@@ -1,12 +1,17 @@
 package com.gestortareas.paneles.infrastructure.adapter.out.persistence.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,4 +40,9 @@ public class TableroEntity {
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "tablero_miembros", joinColumns = @JoinColumn(name = "tablero_id"))
+    @Column(name = "usuario_id", length = 255)
+    private List<String> miembrosIds;
 }

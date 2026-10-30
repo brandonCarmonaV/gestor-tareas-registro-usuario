@@ -37,6 +37,13 @@ public class TableroRepositoryAdapter implements TableroRepository {
 	}
 
 	@Override
+	public List<Tablero> listarPorMiembro(String usuarioId) {
+		List<TableroEntity> entities = repository.findByMiembrosIdsContaining(usuarioId);
+
+		return entities.stream().map(TableroEntityMapper::toTableroDomain).collect(Collectors.toList());
+	}
+
+	@Override
 	public Optional<Tablero> buscarPorId(String tableroId) {
 		Optional<TableroEntity> entityOpt = repository.findById(tableroId);
 
@@ -47,6 +54,13 @@ public class TableroRepositoryAdapter implements TableroRepository {
 		}
 
 		return result;
+	}
+
+	@Override
+	public Tablero actualizar(Tablero tablero) {
+		TableroEntity entity = TableroEntityMapper.toTableroEntity(tablero);
+		TableroEntity entityActualizada = repository.save(entity);
+		return TableroEntityMapper.toTableroDomain(entityActualizada);
 	}
 
 	@Override
