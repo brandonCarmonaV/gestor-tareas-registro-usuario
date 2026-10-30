@@ -10,6 +10,7 @@ import com.gestortareas.paneles.domain.exception.UnauthorizedException;
 import com.gestortareas.paneles.domain.exception.ValidationException;
 import com.gestortareas.paneles.domain.model.EstadoPanelEnum;
 import com.gestortareas.paneles.domain.model.entity.Panel;
+import com.gestortareas.paneles.domain.model.entity.Tablero;
 import com.gestortareas.paneles.domain.port.PanelRepository;
 import com.gestortareas.paneles.infrastructure.adapter.out.webhook.ReporteWebhookClientAdapter;
 
@@ -61,6 +62,10 @@ public class PanelService {
 			return new IllegalArgumentException("Panel no encontrado: " + panelRequest.getPanelId());
 		});
 
+		if (panel.getTableroId() != null) {
+			tableroService.obtenerTableroConAcceso(panel.getTableroId(), propietarioId);
+		}
+
 		panel.actualizarDatos(panelRequest.getNombre(), panelRequest.getColor(), panelRequest.getFechaInicio(), panelRequest.getFechaFin(),
 				panelRequest.getPrioridad(), panelRequest.getEstado(), propietarioId, panelRequest.getDescripcion());
 		webhookClient.notificarCambioPanel(panel);
@@ -72,7 +77,10 @@ public class PanelService {
 		Panel panel = panelRepository.buscarPorId(panelId)
 				.orElseThrow(() -> new IllegalArgumentException("Panel no encontrado: " + panelId));
 
-		if (!panel.getPropietarioId().equals(propietarioId)) {
+		if (panel.getTableroId() != null) {
+			Tablero tablero = tableroService.obtenerTableroConAcceso(panel.getTableroId(), propietarioId);
+			tablero.validarPropietario(propietarioId);
+		} else if (!panel.getPropietarioId().equals(propietarioId)) {
 			throw new UnauthorizedException("No tienes permisos para eliminar este panel");
 		}
 

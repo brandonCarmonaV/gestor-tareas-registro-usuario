@@ -67,7 +67,7 @@ public class Panel {
     }
 
     private void validarUsuarioPanel(String idUsuarioEdita) {
-    	if(!this.propietarioId.equals(idUsuarioEdita)) {
+    	if(this.tableroId == null && !this.propietarioId.equals(idUsuarioEdita)) {
     		throw new UnauthorizedException("No tienes permisos para actualizar este panel");
     	}
     }
