@@ -1,15 +1,19 @@
 package com.gestortareas.paneles.application.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
 
 import com.gestortareas.paneles.domain.exception.ValidationException;
+import com.gestortareas.paneles.domain.model.Usuario;
 import com.gestortareas.paneles.domain.model.entity.Panel;
 import com.gestortareas.paneles.domain.model.entity.Tablero;
 import com.gestortareas.paneles.domain.port.PanelRepository;
 import com.gestortareas.paneles.domain.port.TableroRepository;
+import com.gestortareas.paneles.domain.port.out.UsuarioServicePort;
 import com.gestortareas.paneles.infrastructure.adapter.out.webhook.ReporteWebhookClientAdapter;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +29,7 @@ public class TableroService {
 	private final TableroRepository tableroRepository;
 	private final PanelRepository panelRepository;
 	private final ReporteWebhookClientAdapter webhookClient;
+	private final UsuarioServicePort usuarioService;
 
 	public Tablero crearTablero(String nombre, String propietarioId) {
 
@@ -40,14 +45,16 @@ public class TableroService {
 	}
 
 	public List<Tablero> listarTableros(String usuarioId) {
-		List<Tablero> tableros = tableroRepository.listarPorPropietario(usuarioId);
+		List<Tablero> tableros = new ArrayList<>(tableroRepository.listarPorPropietario(usuarioId));
 
 		if (tableros.isEmpty()) {
 			log.info("El usuario no tiene tableros, se crea el tablero por defecto");
 			Tablero tableroPorDefecto = crearTablero(NOMBRE_TABLERO_POR_DEFECTO, usuarioId);
 			moverPanelesSinTablero(tableroPorDefecto);
-			return List.of(tableroPorDefecto);
+			tableros.add(tableroPorDefecto);
 		}
+
+		tableros.addAll(tableroRepository.listarPorMiembro(usuarioId));
 
 		return tableros;
 	}
@@ -60,9 +67,49 @@ public class TableroService {
 		Tablero tablero = tableroRepository.buscarPorId(tableroId)
 				.orElseThrow(() -> new IllegalArgumentException("Tablero no encontrado: " + tableroId));
 
-		tablero.validarPropietario(usuarioId);
+		tablero.validarAcceso(usuarioId);
 
 		return tablero;
+	}
+
+	public Usuario agregarMiembro(String tableroId, String email, String usuarioId, String token) {
+		Tablero tablero = tableroRepository.buscarPorId(tableroId)
+				.orElseThrow(() -> new IllegalArgumentException("Tablero no encontrado: " + tableroId));
+
+		tablero.validarPropietario(usuarioId);
+
+		Usuario nuevoMiembro = usuarioService.buscarPorEmail(email.trim(), token)
+				.orElseThrow(() -> new NoSuchElementException("No existe un usuario con el correo: " + email));
+
+		tablero.agregarMiembro(nuevoMiembro.id());
+		tableroRepository.actualizar(tablero);
+
+		return nuevoMiembro;
+	}
+
+	public void quitarMiembro(String tableroId, String miembroId, String usuarioId) {
+		Tablero tablero = tableroRepository.buscarPorId(tableroId)
+				.orElseThrow(() -> new IllegalArgumentException("Tablero no encontrado: " + tableroId));
+
+		tablero.validarPropietario(usuarioId);
+
+		tablero.quitarMiembro(miembroId);
+		tableroRepository.actualizar(tablero);
+	}
+
+	public List<Usuario> listarParticipantes(Tablero tablero, String token) {
+		List<String> participantesIds = new ArrayList<>();
+		participantesIds.add(tablero.getPropietarioId());
+		participantesIds.addAll(tablero.getMiembrosIds());
+
+		List<Usuario> participantes = new ArrayList<>();
+		for (String participanteId : participantesIds) {
+			Usuario participante = usuarioService.buscarPorId(participanteId, token)
+					.orElse(new Usuario(participanteId, "Usuario no disponible", null));
+			participantes.add(participante);
+		}
+
+		return participantes;
 	}
 
 	public void eliminarTablero(String tableroId, String usuarioId) {
