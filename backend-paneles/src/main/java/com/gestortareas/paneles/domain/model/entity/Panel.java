@@ -19,6 +19,7 @@ public class Panel {
 	private String descripcion;
 	private LocalDateTime fechaCompletado;
 	private String tableroId;
+	private String responsableId;
 
 	public Panel(String id, String nombre, String color, EstadoPanelEnum estado, LocalDate fechaInicio, LocalDate fechaFin,
 			Integer prioridad, String propietarioId, LocalDateTime fechaCreacion, String descripcion) {
@@ -142,6 +143,14 @@ public class Panel {
 
 	public void setTableroId(String tableroId) {
 		this.tableroId = tableroId;
+	}
+
+	public String getResponsableId() {
+		return responsableId;
+	}
+
+	public void asignarResponsable(String responsableId) {
+		this.responsableId = (responsableId == null || responsableId.trim().isEmpty()) ? null : responsableId;
 	}
 	
 	

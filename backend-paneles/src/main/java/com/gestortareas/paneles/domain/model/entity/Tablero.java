@@ -78,6 +78,12 @@ public class Tablero {
 		this.miembrosIds.remove(usuarioId);
 	}
 
+	public void validarResponsable(String responsableId) {
+		if (responsableId != null && !tieneAcceso(responsableId)) {
+			throw new IllegalArgumentException("El responsable debe ser participante del tablero");
+		}
+	}
+
 	private static void validarNombre(String nombre) {
 		if (nombre == null || nombre.trim().isEmpty()) {
 			throw new IllegalArgumentException("El nombre del tablero es obligatorio y no puede estar vacío");
