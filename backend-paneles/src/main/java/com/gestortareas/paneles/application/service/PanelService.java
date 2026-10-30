@@ -23,6 +23,7 @@ public class PanelService {
 
 	private final PanelRepository panelRepository;
     private final ReporteWebhookClientAdapter webhookClient;
+	private final TableroService tableroService;
 
 	public Panel crearPanel(PanelRequestDTO panelRequest, String propietarioId) {
 
@@ -30,6 +31,9 @@ public class PanelService {
 			Panel panelNuevo = new Panel(null, panelRequest.getNombre(), panelRequest.getColor(),
 					EstadoPanelEnum.PENDIENTE, panelRequest.getFechaInicio(), panelRequest.getFechaFin(),
 					panelRequest.getPrioridad(), propietarioId, LocalDateTime.now(), panelRequest.getDescripcion());
+
+			tableroService.obtenerTableroConAcceso(panelRequest.getTableroId(), propietarioId);
+			panelNuevo.setTableroId(panelRequest.getTableroId());
 
 			 webhookClient.notificarCambioPanel(panelNuevo);
 			
@@ -44,6 +48,11 @@ public class PanelService {
 	public List<Panel> listarPaneles(String propietarioId) {
 		List<Panel> paneles = panelRepository.listarPorPropietario(propietarioId);
 		return paneles;
+	}
+
+	public List<Panel> listarPanelesPorTablero(String tableroId, String usuarioId) {
+		tableroService.obtenerTableroConAcceso(tableroId, usuarioId);
+		return panelRepository.listarPorTablero(tableroId);
 	}
 
 	public Panel actualizarPanel(PanelRequestDTO panelRequest, String propietarioId) {

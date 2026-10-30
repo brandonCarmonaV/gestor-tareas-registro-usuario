@@ -18,6 +18,7 @@ public class Panel {
 	private LocalDateTime fechaCreacion;
 	private String descripcion;
 	private LocalDateTime fechaCompletado;
+	private String tableroId;
 
 	public Panel(String id, String nombre, String color, EstadoPanelEnum estado, LocalDate fechaInicio, LocalDate fechaFin,
 			Integer prioridad, String propietarioId, LocalDateTime fechaCreacion, String descripcion) {
@@ -133,6 +134,14 @@ public class Panel {
 
 	public void setFechaCompletado(LocalDateTime fechaCompletado) {
 		this.fechaCompletado = fechaCompletado;
+	}
+
+	public String getTableroId() {
+		return tableroId;
+	}
+
+	public void setTableroId(String tableroId) {
+		this.tableroId = tableroId;
 	}
 	
 	

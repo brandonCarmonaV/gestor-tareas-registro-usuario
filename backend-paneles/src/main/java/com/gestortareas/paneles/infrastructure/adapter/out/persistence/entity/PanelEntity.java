@@ -62,4 +62,7 @@ public class PanelEntity {
     
     @Column(name = "fecha_completado")
     private LocalDateTime fechaCompletado;
+
+    @Column(name = "tablero_id", length = 36)
+    private String tableroId;
 }

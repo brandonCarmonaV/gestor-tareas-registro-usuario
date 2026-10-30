@@ -37,6 +37,20 @@ public class PanelRepositoryAdapter implements PanelRepository {
 	}
 
 	@Override
+	public List<Panel> listarPorTablero(String tableroId) {
+		List<PanelEntity> entities = repository.findByTableroId(tableroId);
+
+		return entities.stream().map(PanelEntityMapper::toPanelDomain).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<Panel> listarSinTableroPorPropietario(String propietarioId) {
+		List<PanelEntity> entities = repository.findByPropietarioIdAndTableroIdIsNull(propietarioId);
+
+		return entities.stream().map(PanelEntityMapper::toPanelDomain).collect(Collectors.toList());
+	}
+
+	@Override
 	public Optional<Panel> buscarPorId(String panelId) {
 		Optional<PanelEntity> entityOpt = repository.findById(panelId);
 

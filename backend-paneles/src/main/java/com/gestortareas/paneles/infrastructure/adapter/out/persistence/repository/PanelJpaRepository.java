@@ -9,5 +9,7 @@ import java.util.List;
 public interface PanelJpaRepository extends JpaRepository<PanelEntity, String> {
 	
     List<PanelEntity> findByPropietarioId(String propietarioId);
+    List<PanelEntity> findByTableroId(String tableroId);
+    List<PanelEntity> findByPropietarioIdAndTableroIdIsNull(String propietarioId);
 
 }

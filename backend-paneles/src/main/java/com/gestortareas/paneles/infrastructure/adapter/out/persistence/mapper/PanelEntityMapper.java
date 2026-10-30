@@ -8,13 +8,15 @@ public class PanelEntityMapper {
 	public static PanelEntity toPanelEntity(Panel panel) {
 		return new PanelEntity(panel.getId(), panel.getNombre(), panel.getColor(), panel.getEstado(),
 				panel.getFechaInicio(), panel.getFechaFin(), panel.getPrioridad(), panel.getPropietarioId(),
-				panel.getFechaCreacion(), panel.getDescripcion(), panel.getFechaCompletado());
+				panel.getFechaCreacion(), panel.getDescripcion(), panel.getFechaCompletado(), panel.getTableroId());
 	}
 
 	public static Panel toPanelDomain(PanelEntity entity) {
-		return new Panel(entity.getId(), entity.getNombre(), entity.getColor(), entity.getEstado(),
+		Panel panel = new Panel(entity.getId(), entity.getNombre(), entity.getColor(), entity.getEstado(),
 				entity.getFechaInicio(), entity.getFechaFin(), entity.getPrioridad(), entity.getPropietarioId(),
 				entity.getFechaCreacion(), entity.getDescripcion());
+		panel.setTableroId(entity.getTableroId());
+		return panel;
 	}
 	
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gestortareas.paneles.application.models.dto.PanelRequestDTO;
@@ -58,12 +59,15 @@ public class PanelController {
 
     @GetMapping
     public ResponseEntity<List<PanelResponseDTO>> listarPaneles(
+            @RequestParam(value = "tableroId", required = false) String tableroId,
             @CookieValue(value = "access_token", required = false) String cookieToken) {
         
         try {
             String propietarioId = extraerPropietarioId(cookieToken);
             
-            List<Panel> paneles = panelService.listarPaneles(propietarioId);
+            List<Panel> paneles = tableroId == null
+                    ? panelService.listarPaneles(propietarioId)
+                    : panelService.listarPanelesPorTablero(tableroId, propietarioId);
             
             List<PanelResponseDTO> response = paneles.stream()
                     .map(PanelMapper::toPanelResponseDTO)
