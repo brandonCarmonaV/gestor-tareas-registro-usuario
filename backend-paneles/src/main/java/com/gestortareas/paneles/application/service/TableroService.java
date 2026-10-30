@@ -95,6 +95,14 @@ public class TableroService {
 
 		tablero.quitarMiembro(miembroId);
 		tableroRepository.actualizar(tablero);
+
+		// Las tareas que tenía asignadas el miembro quitado quedan sin responsable
+		for (Panel panel : panelRepository.listarPorTablero(tableroId)) {
+			if (miembroId.equals(panel.getResponsableId())) {
+				panel.asignarResponsable(null);
+				panelRepository.actualizar(panel);
+			}
+		}
 	}
 
 	public List<Usuario> listarParticipantes(Tablero tablero, String token) {

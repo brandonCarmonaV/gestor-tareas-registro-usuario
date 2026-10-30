@@ -33,8 +33,10 @@ public class PanelService {
 					EstadoPanelEnum.PENDIENTE, panelRequest.getFechaInicio(), panelRequest.getFechaFin(),
 					panelRequest.getPrioridad(), propietarioId, LocalDateTime.now(), panelRequest.getDescripcion());
 
-			tableroService.obtenerTableroConAcceso(panelRequest.getTableroId(), propietarioId);
+			Tablero tablero = tableroService.obtenerTableroConAcceso(panelRequest.getTableroId(), propietarioId);
 			panelNuevo.setTableroId(panelRequest.getTableroId());
+			panelNuevo.asignarResponsable(panelRequest.getResponsableId());
+			tablero.validarResponsable(panelNuevo.getResponsableId());
 
 			 webhookClient.notificarCambioPanel(panelNuevo);
 			
@@ -63,7 +65,9 @@ public class PanelService {
 		});
 
 		if (panel.getTableroId() != null) {
-			tableroService.obtenerTableroConAcceso(panel.getTableroId(), propietarioId);
+			Tablero tablero = tableroService.obtenerTableroConAcceso(panel.getTableroId(), propietarioId);
+			panel.asignarResponsable(panelRequest.getResponsableId());
+			tablero.validarResponsable(panel.getResponsableId());
 		}
 
 		panel.actualizarDatos(panelRequest.getNombre(), panelRequest.getColor(), panelRequest.getFechaInicio(), panelRequest.getFechaFin(),

@@ -9,7 +9,7 @@ public class PanelMapper {
             return null;
         }
 
-        return new PanelResponseDTO(
+        PanelResponseDTO response = new PanelResponseDTO(
                 panel.getId(),
                 panel.getNombre(),
                 panel.getColor(),
@@ -20,5 +20,7 @@ public class PanelMapper {
                 panel.getPropietarioId(),
                 panel.getFechaCreacion()
         );
+        response.setResponsableId(panel.getResponsableId());
+        return response;
     }
 }

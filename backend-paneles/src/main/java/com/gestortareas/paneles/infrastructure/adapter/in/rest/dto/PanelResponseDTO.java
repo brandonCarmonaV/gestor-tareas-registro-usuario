@@ -15,6 +15,7 @@ public class PanelResponseDTO {
     private Integer prioridad;
     private String propietarioId;
     private LocalDateTime fechaCreacion;
+    private String responsableId;
 
     public PanelResponseDTO() {
     }
@@ -103,5 +104,13 @@ public class PanelResponseDTO {
 
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+
+    public String getResponsableId() {
+        return responsableId;
+    }
+
+    public void setResponsableId(String responsableId) {
+        this.responsableId = responsableId;
     }
 }
