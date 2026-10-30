@@ -65,4 +65,7 @@ public class PanelEntity {
 
     @Column(name = "tablero_id", length = 36)
     private String tableroId;
+
+    @Column(name = "responsable_id", length = 255)
+    private String responsableId;
 }
