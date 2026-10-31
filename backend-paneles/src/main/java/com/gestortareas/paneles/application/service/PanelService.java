@@ -38,9 +38,10 @@ public class PanelService {
 			panelNuevo.asignarResponsable(panelRequest.getResponsableId());
 			tablero.validarResponsable(panelNuevo.getResponsableId());
 
-			 webhookClient.notificarCambioPanel(panelNuevo);
-			
-			return panelRepository.crearPanel(panelNuevo);
+			Panel panelGuardado = panelRepository.crearPanel(panelNuevo);
+			webhookClient.notificarCambioPanel(panelGuardado);
+
+			return panelGuardado;
 
 		} catch (IllegalArgumentException ex) {
 			log.warn("Validación fallida al crear panel: " + ex.getMessage());
