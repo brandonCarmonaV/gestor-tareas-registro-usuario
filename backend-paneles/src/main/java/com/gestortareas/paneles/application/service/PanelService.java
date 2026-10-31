@@ -50,7 +50,8 @@ public class PanelService {
 	}
 
 	public List<Panel> listarPaneles(String propietarioId) {
-		List<Panel> paneles = panelRepository.listarPorPropietario(propietarioId);
+		// Tareas de las que el usuario es responsable, más las que creó y no tienen responsable
+		List<Panel> paneles = panelRepository.listarPorResponsable(propietarioId);
 		return paneles;
 	}
 

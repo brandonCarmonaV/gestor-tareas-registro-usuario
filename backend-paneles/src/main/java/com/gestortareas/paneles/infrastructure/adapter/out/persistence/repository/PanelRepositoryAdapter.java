@@ -51,6 +51,13 @@ public class PanelRepositoryAdapter implements PanelRepository {
 	}
 
 	@Override
+	public List<Panel> listarPorResponsable(String usuarioId) {
+		List<PanelEntity> entities = repository.findByResponsableIdOrResponsableIdIsNullAndPropietarioId(usuarioId, usuarioId);
+
+		return entities.stream().map(PanelEntityMapper::toPanelDomain).collect(Collectors.toList());
+	}
+
+	@Override
 	public Optional<Panel> buscarPorId(String panelId) {
 		Optional<PanelEntity> entityOpt = repository.findById(panelId);
 
