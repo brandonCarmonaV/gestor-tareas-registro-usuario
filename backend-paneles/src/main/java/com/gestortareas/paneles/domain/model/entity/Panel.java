@@ -18,6 +18,8 @@ public class Panel {
 	private LocalDateTime fechaCreacion;
 	private String descripcion;
 	private LocalDateTime fechaCompletado;
+	private String tableroId;
+	private String responsableId;
 
 	public Panel(String id, String nombre, String color, EstadoPanelEnum estado, LocalDate fechaInicio, LocalDate fechaFin,
 			Integer prioridad, String propietarioId, LocalDateTime fechaCreacion, String descripcion) {
@@ -66,7 +68,7 @@ public class Panel {
     }
 
     private void validarUsuarioPanel(String idUsuarioEdita) {
-    	if(this.propietarioId != idUsuarioEdita) {
+    	if(this.tableroId == null && !this.propietarioId.equals(idUsuarioEdita)) {
     		throw new UnauthorizedException("No tienes permisos para actualizar este panel");
     	}
     }
@@ -133,6 +135,22 @@ public class Panel {
 
 	public void setFechaCompletado(LocalDateTime fechaCompletado) {
 		this.fechaCompletado = fechaCompletado;
+	}
+
+	public String getTableroId() {
+		return tableroId;
+	}
+
+	public void setTableroId(String tableroId) {
+		this.tableroId = tableroId;
+	}
+
+	public String getResponsableId() {
+		return responsableId;
+	}
+
+	public void asignarResponsable(String responsableId) {
+		this.responsableId = (responsableId == null || responsableId.trim().isEmpty()) ? null : responsableId;
 	}
 	
 	

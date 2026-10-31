@@ -9,6 +9,9 @@ public interface PanelRepository {
 
 	Panel crearPanel(Panel panel);
     List<Panel> listarPorPropietario(String propietarioId);
+    List<Panel> listarPorTablero(String tableroId);
+    List<Panel> listarSinTableroPorPropietario(String propietarioId);
+    List<Panel> listarPorResponsable(String usuarioId);
     Optional<Panel> buscarPorId(String panelId);
     Panel actualizar(Panel panel);
     void eliminar(String panelId);

@@ -28,5 +28,7 @@ public class PanelRequestDTO {
     private String descripcion;
     private String panelId;
     private EstadoPanelEnum estado;
+    private String tableroId;
+    private String responsableId;
 	
 }

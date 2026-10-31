@@ -9,6 +9,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -26,6 +28,7 @@ import lombok.Setter;
 @Table(name = "paneles")
 public class PanelEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", length = 36, nullable = false)
     private String id;
     
@@ -59,4 +62,10 @@ public class PanelEntity {
     
     @Column(name = "fecha_completado")
     private LocalDateTime fechaCompletado;
+
+    @Column(name = "tablero_id", length = 36)
+    private String tableroId;
+
+    @Column(name = "responsable_id", length = 255)
+    private String responsableId;
 }
