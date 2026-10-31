@@ -16,6 +16,7 @@ public class PanelEntityMapper {
 		Panel panel = new Panel(entity.getId(), entity.getNombre(), entity.getColor(), entity.getEstado(),
 				entity.getFechaInicio(), entity.getFechaFin(), entity.getPrioridad(), entity.getPropietarioId(),
 				entity.getFechaCreacion(), entity.getDescripcion());
+		panel.setFechaCompletado(entity.getFechaCompletado());
 		panel.setTableroId(entity.getTableroId());
 		panel.asignarResponsable(entity.getResponsableId());
 		return panel;
