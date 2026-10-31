@@ -101,6 +101,7 @@ public class TableroService {
 			if (miembroId.equals(panel.getResponsableId())) {
 				panel.asignarResponsable(null);
 				panelRepository.actualizar(panel);
+				webhookClient.notificarCambioPanel(panel);
 			}
 		}
 	}

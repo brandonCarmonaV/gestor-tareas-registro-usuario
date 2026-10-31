@@ -30,7 +30,8 @@ public class ReporteWebhookClientAdapter {
                     panel.getEstado() != null ? panel.getEstado().name() : null,
                     panel.getFechaInicio(),
                     panel.getFechaFin(),
-                    panel.getFechaCompletado()
+                    panel.getFechaCompletado(),
+                    panel.getResponsableId()
             );
 
             HttpHeaders headers = new HttpHeaders();
@@ -70,7 +71,8 @@ public class ReporteWebhookClientAdapter {
             String estado,
             LocalDate fechaInicio,
             LocalDate fechaFin,
-            LocalDateTime fechaCompletado
+            LocalDateTime fechaCompletado,
+            String responsableId
     ) {}
 
     private record WebhookComandoPayloadEliminar(
